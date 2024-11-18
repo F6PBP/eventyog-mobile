@@ -19,6 +19,9 @@ EventYog dikembangkan oleh kelompok HalfOfDozen (F6), yang terdiri dari enam mah
 6. **Fransisca Ellya Bunaren** (2306152286)
 
 ## Modul Utama dalam Aplikasi
+Pembagian tugas dapat diakses pada link ini:
+> https://docs.google.com/spreadsheets/d/1zH-FyHCWx9a6bBGQ5zgjocIm-GUWxTVqYs0H9DE2wIo/edit?usp=sharing
+
 EventYog memiliki berbagai modul utama (CRUD) yang berperan penting dalam pengalaman pengguna, meliputi:
 1. **Review Event**: Pada halaman ini, pengguna dapat menambahkan review tentang suatu event. Pengguna dan Admin memiliki akses untuk mengedit dan menghapus review. Selain itu, pengguna juga dapat berkomentar pada review yang diberikan oleh pengguna lain.
 2. **Explore Events**: Menu ini menampilkan daftar event di kota Jogja berdasarkan preferensi pengguna. Admin dapat menambahkan, mengedit, dan menghapus event.
