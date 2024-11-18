@@ -17,3 +17,30 @@ EventYog dikembangkan oleh kelompok HalfOfDozen (F6), yang terdiri dari enam mah
 4. **Allan Kwek** (2306152134)
 5. **Arief Ridzki Darmawan** (2306210115)
 6. **Fransisca Ellya Bunaren** (2306152286)
+
+## Modul Utama dalam Aplikasi
+EventYog memiliki berbagai modul utama (CRUD) yang berperan penting dalam pengalaman pengguna, meliputi:
+1. **Review Event**: Pada halaman ini, pengguna dapat menambahkan review tentang suatu event. Pengguna dan Admin memiliki akses untuk mengedit dan menghapus review. Selain itu, pengguna juga dapat berkomentar pada review yang diberikan oleh pengguna lain.
+2. **Explore Events**: Menu ini menampilkan daftar event di kota Jogja berdasarkan preferensi pengguna. Admin dapat menambahkan, mengedit, dan menghapus event.
+3. **View Merchandise**: Pengguna dapat melihat daftar merchandise yang dijual dalam satu event. Admin memiliki kemampuan untuk menambahkan, mengedit, dan menghapus merchandise tersebut.
+4. **My Cart**: Pengguna dapat membeli produk merchandise dari suatu event. Produk yang dibeli akan dimasukkan ke dalam keranjang (cart). Pengguna bisa menambahkan produk, mengubah kuantitas, atau menghapus produk dari keranjang.
+5. **View User**: Admin dapat melihat daftar pengguna, mendaftarkan pengguna baru, mengedit data pengguna, serta menghapus pengguna.
+6. **Scheduled Events**: Halaman ini menampilkan event yang telah didaftarkan oleh pengguna. Pengguna dapat menambah event dengan mendaftar pada event baru, membatalkan pendaftaran, atau mengganti jenis tiket (jika tersedia lebih dari satu jenis tiket).
+
+## Sumber Dataset Awal Kategori Produk
+Dataset yang digunakan untuk memulai pengembangan kategori produk pada aplikasi ini dapat diakses melalui tautan berikut: [Dataset dan Link Sumbernya](https://docs.google.com/spreadsheets/d/1iP8eY44oMNFkbkmIzFSCkeFv99xC77yMKTMeYp2hoFs/edit?usp=sharing)
+
+
+## Peran dan Fungsi Pengguna
+1. **Pengguna (User) Logged In:**
+   - Menggunakan EventYog untuk menelusuri dan menemukan berbagai acara menarik di Yogyakarta.
+   - Mendaftar dan mengikuti acara yang mereka minati.
+   - Memberikan ulasan setelah mengikuti acara, serta membeli merchandise eksklusif yang terkait dengan acara tersebut.
+2. **Pengguna (User):**
+   - Tipe pengguna yang belum melakukan registrasi atau log in.
+   - Akses pengguna lebih dibatasi. Halaman seperti View Merchandise, My cart, Scheduled Event, dan beberapa lainnya tidak dapat diakses.
+   - Pengguna hanya bisa mengakses Landing Page dan Forum, tanpa dapat menambahkan, merubah, ataupun menghapus data/informasi apapun.
+3. **Administrator (Admin):**
+   - Mengelola seluruh aplikasi, termasuk memantau aktivitas pengguna.
+   - Menangani permasalahan teknis dan memberikan bantuan.
+   - Memastikan aplikasi berfungsi dengan baik, selalu diperbarui, dan tetap aman digunakan.
