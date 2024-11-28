@@ -59,7 +59,7 @@ class HomePage extends StatelessWidget {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

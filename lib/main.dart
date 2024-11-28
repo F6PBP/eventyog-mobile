@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:eventyog_mobile/pages/home/index.dart';
+import 'package:eventyog_mobile/pages/auth/login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
             ),
             useMaterial3: true,
           ),
-          home: const HomePage(),
+          home: const LoginPage(),
         ));
   }
 }
