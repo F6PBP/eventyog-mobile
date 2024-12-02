@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/pages/auth/profile.dart';
 import 'package:eventyog_mobile/pages/home/index.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +24,7 @@ class AnimatedBottomNavigationBar extends StatelessWidget {
       const HomePage(),
       const HomePage(),
       const HomePage(),
-      const HomePage()
+      ProfilePage(),
     ];
 
     return BottomNavigationBar(
