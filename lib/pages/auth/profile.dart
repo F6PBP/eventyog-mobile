@@ -1,81 +1,162 @@
-import 'package:eventyog_mobile/pages/auth/login.dart';
+import 'package:eventyog_mobile/models/ProfileModel.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  Future<ProfileModel> fetchUserProfile(CookieRequest request) async {
+    final response =
+        await request.get("http://localhost:8000/api/auth/profile/");
+
+    print(response);
+    return ProfileModel.fromJson(response);
+  }
+
   @override
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: NetworkImage(
-                    'https://res.cloudinary.com/mxgpapp/image/upload/v1731240524/eventyog/profile/znoqqzxfewoc4nllnfz0.png'),
-              ),
-              SizedBox(height: 20),
-              Text(
-                request.jsonData['username'],
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 10),
-              Text(
-                'andrew.smith@example.com',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  // Add your logout functionality here
-                  final response = await request
-                      .logout("http://localhost:8000/api/auth/logout/");
-                  String message = response["message"];
-                  if (context.mounted) {
-                    if (response['status']) {
-                      String uname = response["username"];
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text("$message Sampai jumpa, $uname."),
-                      ));
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginPage()),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(message),
-                        ),
-                      );
-                    }
-                  }
+    return FutureBuilder<ProfileModel>(
+      future: fetchUserProfile(request),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text("Profile"),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pop(context);
                 },
-                child: Text('Logout'),
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.redAccent,
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                  textStyle: TextStyle(
-                    fontSize: 18,
-                  ),
+              ),
+            ),
+            body: Center(
+              child: Text('Error: ${snapshot.error}'),
+            ),
+          );
+        } else if (snapshot.hasData) {
+          final profile = snapshot.data!;
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text("Profile"),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    CircleAvatar(
+                      radius: 60,
+                      backgroundImage: NetworkImage(profile.data.imageUrl!),
+                      backgroundColor: Colors.grey.shade300,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      profile.data.username!,
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      profile.data.name!,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      profile.data.email!,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      profile.data.bio!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        // Perform logout operation here
+                        final response = await request
+                            .logout("http://localhost:8000/api/auth/logout/");
+                        String message = response["message"];
+                        if (context.mounted) {
+                          if (response['status']) {
+                            String uname = response["username"];
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("$message Goodbye, $uname."),
+                            ));
+                            Navigator.pop(context);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(message),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.logout),
+                      label: const Text('Logout'),
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.redAccent,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
+          );
+        } else {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text("Profile"),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            body: const Center(
+              child: Text('No profile data found'),
+            ),
+          );
+        }
+      },
     );
   }
 }

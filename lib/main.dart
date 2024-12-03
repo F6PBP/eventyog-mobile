@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:eventyog_mobile/pages/auth/login.dart';
+import 'package:eventyog_mobile/pages/home/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -35,7 +36,11 @@ class MyApp extends StatelessWidget {
           title: 'Skibishop',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color.fromARGB(255, 0, 74, 254),
+              primary: const Color.fromARGB(255, 0, 74, 254),
+              secondary: const Color.fromARGB(255, 0, 233, 79),
+            ),
             textTheme: GoogleFonts.dmSansTextTheme(
               Theme.of(context).textTheme,
             ),
