@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:eventyog_mobile/pages/auth/login.dart';
+import 'package:eventyog_mobile/pages/friends/friend_list.dart';
 import 'package:eventyog_mobile/pages/home/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';

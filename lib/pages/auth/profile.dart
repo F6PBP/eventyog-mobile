@@ -11,7 +11,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   Future<ProfileModel> fetchUserProfile(CookieRequest request) async {
     final response =
-        await request.get("http://localhost:8000/api/auth/profile/");
+        await request.get("http://10.0.2.2:8000/api/auth/profile/");
 
     print(response);
     return ProfileModel.fromJson(response);
@@ -106,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       onPressed: () async {
                         // Perform logout operation here
                         final response = await request
-                            .logout("http://localhost:8000/api/auth/logout/");
+                            .logout("http://10.0.2.2:8000/api/auth/logout/");
                         String message = response["message"];
                         if (context.mounted) {
                           if (response['status']) {
@@ -127,7 +127,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: const Icon(Icons.logout),
                       label: const Text('Logout'),
                       style: ElevatedButton.styleFrom(
-                        primary: Colors.redAccent,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 15),
                         shape: RoundedRectangleBorder(

@@ -1,20 +1,33 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
-class BiodataPage extends StatefulWidget {
-  const BiodataPage({super.key});
+class OnboardingPage extends StatefulWidget {
+  const OnboardingPage({super.key});
 
   @override
-  State<BiodataPage> createState() => _BiodataPageState();
+  State<OnboardingPage> createState() => _OnboardingPageState();
 }
 
-class _BiodataPageState extends State<BiodataPage> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
+class _OnboardingPageState extends State<OnboardingPage> {
+  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _biodataController = TextEditingController();
+  File? _profileImage;
+
+  Future<void> _pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _profileImage = File(pickedFile.path);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +41,7 @@ class _BiodataPageState extends State<BiodataPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                'Biodata Form',
+                'Profile Form',
                 style: TextStyle(
                   fontSize: 28.0,
                   fontWeight: FontWeight.bold,
@@ -40,10 +53,22 @@ class _BiodataPageState extends State<BiodataPage> {
                 style: TextStyle(fontSize: 16.0, color: Colors.grey),
               ),
               const SizedBox(height: 32.0),
+              GestureDetector(
+                onTap: _pickImage,
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundImage:
+                      _profileImage != null ? FileImage(_profileImage!) : null,
+                  child: _profileImage == null
+                      ? const Icon(Icons.add_a_photo, size: 50)
+                      : null,
+                ),
+              ),
+              const SizedBox(height: 16.0),
               TextField(
-                controller: _nameController,
+                controller: _fullNameController,
                 decoration: InputDecoration(
-                  labelText: 'Name',
+                  labelText: 'Full Name',
                   filled: true,
                   fillColor: Colors.grey[200],
                   border: OutlineInputBorder(
@@ -56,9 +81,9 @@ class _BiodataPageState extends State<BiodataPage> {
               ),
               const SizedBox(height: 16.0),
               TextField(
-                controller: _ageController,
+                controller: _emailController,
                 decoration: InputDecoration(
-                  labelText: 'Age',
+                  labelText: 'Email',
                   filled: true,
                   fillColor: Colors.grey[200],
                   border: OutlineInputBorder(
@@ -71,9 +96,9 @@ class _BiodataPageState extends State<BiodataPage> {
               ),
               const SizedBox(height: 16.0),
               TextField(
-                controller: _addressController,
+                controller: _biodataController,
                 decoration: InputDecoration(
-                  labelText: 'Address',
+                  labelText: 'Biodata',
                   filled: true,
                   fillColor: Colors.grey[200],
                   border: OutlineInputBorder(
@@ -83,27 +108,29 @@ class _BiodataPageState extends State<BiodataPage> {
                   contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16.0, vertical: 12.0),
                 ),
+                maxLines: 5,
               ),
               const SizedBox(height: 24.0),
               ElevatedButton(
                 onPressed: () async {
-                  String name = _nameController.text;
-                  String age = _ageController.text;
-                  String address = _addressController.text;
+                  String fullName = _fullNameController.text;
+                  String email = _emailController.text;
+                  String biodata = _biodataController.text;
 
                   final response = await request.postJson(
-                      "http://localhost:8000/api/biodata/",
+                      "http://10.0.2.2:8000/api/onboarding/",
                       jsonEncode({
-                        "name": name,
-                        "age": age,
-                        "address": address,
+                        "full_name": fullName,
+                        "email": email,
+                        "biodata": biodata,
+                        // You may need to handle the profile image upload separately
                       }));
 
                   if (context.mounted) {
                     if (response['status'] == 'success') {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Biodata submitted successfully!'),
+                          content: Text('Profile submitted successfully!'),
                         ),
                       );
                       Navigator.pop(context);

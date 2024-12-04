@@ -1,4 +1,5 @@
 import 'package:eventyog_mobile/pages/auth/profile.dart';
+import 'package:eventyog_mobile/pages/friends/friend_list.dart';
 import 'package:eventyog_mobile/pages/home/index.dart';
 import 'package:flutter/material.dart';
 
@@ -16,14 +17,22 @@ class AnimatedBottomNavigationBar extends StatelessWidget {
       Icons.home,
       Icons.event,
       Icons.forum,
+      Icons.people,
       Icons.person,
     ];
-    final List<String> labels = ['Home', 'Events', 'Forum', 'Profile'];
+    final List<String> labels = [
+      'Home',
+      'Events',
+      'Forum',
+      'Friends',
+      'Profile',
+    ];
 
     final List<Widget> pages = [
       const HomePage(),
       const HomePage(),
       const HomePage(),
+      const FriendListPage(),
       ProfilePage(),
     ];
 
