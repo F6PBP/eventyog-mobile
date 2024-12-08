@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -118,7 +119,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   String biodata = _biodataController.text;
 
                   final response = await request.postJson(
-                      "http://10.0.2.2:8000/api/onboarding/",
+                      "${dotenv.env['HOSTNAME']}:8000/api/onboarding/",
                       jsonEncode({
                         "full_name": fullName,
                         "email": email,

@@ -1,9 +1,8 @@
 import 'dart:io';
 
 import 'package:eventyog_mobile/pages/auth/login.dart';
-import 'package:eventyog_mobile/pages/friends/friend_list.dart';
-import 'package:eventyog_mobile/pages/home/index.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +16,8 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
   HttpOverrides.global = MyHttpOverrides();
 }
