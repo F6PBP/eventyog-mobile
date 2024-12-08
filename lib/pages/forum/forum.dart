@@ -1,6 +1,7 @@
 import 'package:eventyog_mobile/models/ForumModel.dart';
 import 'package:eventyog_mobile/pages/forum/services/forum_service.dart';
 import 'forum_detail.dart';
+import 'add_post_page.dart'; // Import AddPostPage
 import 'package:flutter/material.dart';
 
 class ForumPage extends StatefulWidget {
@@ -74,7 +75,12 @@ class _ForumPageState extends State<ForumPage> {
                 ElevatedButton.icon(
                   onPressed: () {
                     // Navigate to Add Post Page
-                    Navigator.pushNamed(context, '/add_post').then((_) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddPostPage(),
+                      ),
+                    ).then((_) {
                       _fetchForumPosts(''); // Refresh after adding a post
                     });
                   },
@@ -137,7 +143,7 @@ class _ForumPageState extends State<ForumPage> {
                                       children: [
                                         CircleAvatar(
                                           backgroundImage: NetworkImage(
-                                            post['profile_picture'] ?? 
+                                            post['profile_picture'] ??
                                                 "https://res.cloudinary.com/mxgpapp/image/upload/v1729588463/ux6rsms8ownd5oxxuqjr.png",
                                           ),
                                           radius: 16,
@@ -154,7 +160,8 @@ class _ForumPageState extends State<ForumPage> {
                                     ),
                                     const SizedBox(height: 12),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(
                                           children: [

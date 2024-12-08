@@ -13,6 +13,7 @@ class ForumDetailPage extends StatefulWidget {
 
 class _ForumDetailPageState extends State<ForumDetailPage> {
   late Future<ForumDetailModel> _forumDetail;
+  final String currentUser = "currentUserUsername"; // Ganti dengan mekanisme untuk mendapatkan username user saat ini
 
   @override
   void initState() {
@@ -78,19 +79,21 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                         ],
                       ),
                     ),
-                    PopupMenuButton<String>(
-                      onSelected: (value) {
-                        if (value == "edit") {
-                          // Navigate to edit post
-                        } else if (value == "delete") {
-                          // Handle delete
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(value: "edit", child: Text("Edit")),
-                        const PopupMenuItem(value: "delete", child: Text("Delete")),
-                      ],
-                    ),
+                    if (forumPost.user == currentUser) // Tampilkan hanya jika user saat ini adalah pemilik
+                      PopupMenuButton<String>(
+                        onSelected: (value) {
+                          if (value == "edit") {
+                            // Navigate to edit post
+                            Navigator.pushNamed(context, '/edit_post', arguments: forumPost.id);
+                          } else if (value == "delete") {
+                            _deletePost(forumPost.id);
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(value: "edit", child: Text("Edit")),
+                          const PopupMenuItem(value: "delete", child: Text("Delete")),
+                        ],
+                      ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -201,6 +204,34 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _deletePost(int postId) {
+    // Confirm and handle post deletion
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Post"),
+        content: const Text("Are you sure you want to delete this post?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              deleteForumPost(postId).then((success) {
+                if (success) {
+                  Navigator.pop(context);
+                  Navigator.pop(context); // Return to previous page
+                }
+              });
+            },
+            child: const Text("Delete"),
+          ),
+        ],
       ),
     );
   }

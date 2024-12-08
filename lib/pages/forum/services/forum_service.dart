@@ -35,12 +35,7 @@ Future<bool> addForumPost(String title, String content) async {
       body: jsonEncode({"title": title, "content": content}),
     );
 
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      final errorData = jsonDecode(response.body);
-      throw Exception('Failed to add post: ${errorData['message']}');
-    }
+    return response.statusCode == 200; // Returns true if post is successfully added
   } catch (e) {
     throw Exception('Error adding post: $e');
   }
