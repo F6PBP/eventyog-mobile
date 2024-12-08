@@ -1,6 +1,7 @@
 import 'package:eventyog_mobile/pages/auth/register.dart';
 import 'package:eventyog_mobile/pages/home/index.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -98,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                   String password = _passwordController.text;
 
                   final response = await request
-                      .login("http://10.0.2.2:8000/api/auth/login/", {
+                      .login("${dotenv.env['HOSTNAME']}:8000/api/auth/login/", {
                     'username': username,
                     'password': password,
                   });

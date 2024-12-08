@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:eventyog_mobile/pages/auth/onboarding.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -96,7 +97,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   String password2 = _confirmPasswordController.text;
 
                   final response = await request.postJson(
-                      "http://10.0.2.2:8000/api/auth/register/",
+                      "${dotenv.env['HOSTNAME']}:8000/api/auth/register/",
                       jsonEncode({
                         "username": username,
                         "password1": password1,
