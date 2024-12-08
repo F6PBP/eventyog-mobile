@@ -99,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                   String password = _passwordController.text;
 
                   final response = await request
-                      .login("${dotenv.env['HOSTNAME']}:8000/api/auth/login/", {
+                      .login("http://10.0.2.2:8000/api/auth/login/", {
                     'username': username,
                     'password': password,
                   });
