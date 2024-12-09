@@ -16,7 +16,6 @@ class EventDetail extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Gambar acara
             Image.network(
               event.imageUrl,
               height: 250,
