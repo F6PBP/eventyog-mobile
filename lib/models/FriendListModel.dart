@@ -64,6 +64,7 @@ class Friend {
   String username;
   String email;
   List<dynamic> categories;
+  bool is_friend;
 
   Friend({
     required this.id,
@@ -71,6 +72,7 @@ class Friend {
     required this.username,
     required this.email,
     required this.categories,
+    required this.is_friend,
   });
 
   factory Friend.fromJson(Map<String, dynamic> json) => Friend(
@@ -79,6 +81,7 @@ class Friend {
         username: json["username"],
         email: json["email"],
         categories: List<dynamic>.from(json["categories"].map((x) => x)),
+        is_friend: json['is_friend'],
       );
 
   Map<String, dynamic> toJson() => {

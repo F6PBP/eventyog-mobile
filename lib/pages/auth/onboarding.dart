@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:eventyog_mobile/pages/home/index.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -20,6 +22,24 @@ class _OnboardingPageState extends State<OnboardingPage> {
   final TextEditingController _biodataController = TextEditingController();
   File? _profileImage;
 
+  final List<String> _categories = [
+    'Olahraga',
+    'Seni',
+    'Musik',
+    'Cosplay',
+    'Lingkungan',
+    'Volunteer',
+    'Akademis',
+    'Kuliner',
+    'Pariwisata',
+    'Festival',
+    'Film',
+    'Fashion',
+    'Lainnya',
+  ]; // Sample categories
+
+  List<String> _selectedCategories = [];
+
   Future<void> _pickImage() async {
     final pickedFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -27,6 +47,71 @@ class _OnboardingPageState extends State<OnboardingPage> {
       setState(() {
         _profileImage = File(pickedFile.path);
       });
+    }
+  }
+
+  Future<void> _submitForm(CookieRequest request, String fullName, String email,
+      String biodata) async {
+    try {
+      // Prepare multipart request
+      final uri = Uri.parse("http://10.0.2.2:8000/api/auth/onboarding/");
+      final multipartRequest = http.MultipartRequest('POST', uri)
+        ..headers.addAll(await request.headers)
+        ..fields['name'] = fullName
+        ..fields['email'] = email
+        ..fields['bio'] = biodata
+        ..fields['categories'] = _selectedCategories.join(',');
+
+      if (_profileImage != null) {
+        multipartRequest.files.add(await http.MultipartFile.fromPath(
+          'profile_picture',
+          _profileImage!.path,
+        ));
+      }
+
+      // Send request
+      final streamedResponse = await multipartRequest.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+
+        if (responseData['status'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile submitted successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomePage(),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(responseData['message'] ?? 'Submission failed!'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('An error occurred while submitting the form.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error occurred: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -112,38 +197,36 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 maxLines: 5,
               ),
               const SizedBox(height: 24.0),
+              MultiSelectDialogField(
+                items: _categories
+                    .map((category) =>
+                        MultiSelectItem<String>(category, category))
+                    .toList(),
+                title: const Text('Preferred Categories'),
+                selectedColor: Theme.of(context).colorScheme.primary,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(8.0),
+                  border: Border.all(color: Colors.grey),
+                ),
+                buttonText: const Text(
+                  'Select Preferred Categories',
+                  style: TextStyle(fontSize: 16),
+                ),
+                onConfirm: (values) {
+                  setState(() {
+                    _selectedCategories = values.cast<String>();
+                  });
+                },
+              ),
+              const SizedBox(height: 24.0),
               ElevatedButton(
                 onPressed: () async {
                   String fullName = _fullNameController.text;
                   String email = _emailController.text;
                   String biodata = _biodataController.text;
 
-                  final response = await request.postJson(
-                      "${dotenv.env['HOSTNAME']}:8000/api/onboarding/",
-                      jsonEncode({
-                        "full_name": fullName,
-                        "email": email,
-                        "biodata": biodata,
-                        // You may need to handle the profile image upload separately
-                      }));
-
-                  if (context.mounted) {
-                    if (response['status'] == 'success') {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Profile submitted successfully!'),
-                        ),
-                      );
-                      Navigator.pop(context);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content:
-                              Text(response['message'] ?? 'Submission failed!'),
-                        ),
-                      );
-                    }
-                  }
+                  await _submitForm(request, fullName, email, biodata);
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),

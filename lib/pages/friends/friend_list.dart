@@ -1,5 +1,6 @@
 import 'package:eventyog_mobile/models/FriendListModel.dart';
 import 'package:eventyog_mobile/pages/friends/friend_detail.dart';
+import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -19,14 +20,16 @@ class _FriendListPageState extends State<FriendListPage> {
 
     Future<FriendListModel> fetchFriendList(CookieRequest request) async {
       final response =
-          await request.get("${dotenv.env['HOSTNAME']}:8000/api/friend/list/");
-
+          await request.get("http://10.0.2.2:8000/api/friend/list/");
       return FriendListModel.fromJson(response);
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Friends List'),
+        title: const Text('Friends List and Recommendations'),
+      ),
+      bottomNavigationBar: const AnimatedBottomNavigationBar(
+        currentIndex: 3,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -77,10 +80,12 @@ class _FriendListPageState extends State<FriendListPage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => FriendDetailPage(
+                                    id: friends[index].id,
                                     name: friends[index].username,
                                     email: friends[index].email,
                                     phone: "1234567890",
                                     address: "123, Street Name",
+                                    isFriend: friends[index].is_friend,
                                   ),
                                 ),
                               );
@@ -92,45 +97,7 @@ class _FriendListPageState extends State<FriendListPage> {
                   }
                 },
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class FriendRecommendationPage extends StatefulWidget {
-  const FriendRecommendationPage({super.key});
-
-  @override
-  State<FriendRecommendationPage> createState() =>
-      _FriendRecommendationPageState();
-}
-
-class _FriendRecommendationPageState extends State<FriendRecommendationPage> {
-  @override
-  Widget build(BuildContext context) {
-    final request = context.watch<CookieRequest>();
-
-    Future<FriendListModel> fetchFriendRecommendations(
-        CookieRequest request) async {
-      final response = await request
-          .get("${dotenv.env['HOSTNAME']}:8000/api/friend/recommendations/");
-
-      return FriendListModel.fromJson(response);
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Friend Recommendations'),
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+              const SizedBox(height: 32.0),
               const Text(
                 'Recommendations',
                 style: TextStyle(
@@ -145,17 +112,17 @@ class _FriendRecommendationPageState extends State<FriendRecommendationPage> {
               ),
               const SizedBox(height: 32.0),
               FutureBuilder<FriendListModel>(
-                future: fetchFriendRecommendations(request),
+                future: fetchFriendList(request),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const CircularProgressIndicator();
                   } else if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else if (!snapshot.hasData ||
-                      snapshot.data!.data.friends.isEmpty) {
+                      snapshot.data!.data.friendsRecommendation.isEmpty) {
                     return const Text('No recommendations found.');
                   } else {
-                    final friends = snapshot.data!.data.friends;
+                    final friends = snapshot.data!.data.friendsRecommendation;
                     return ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -174,10 +141,12 @@ class _FriendRecommendationPageState extends State<FriendRecommendationPage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => FriendDetailPage(
+                                    id: friends[index].id,
                                     name: friends[index].username,
                                     email: friends[index].email,
                                     phone: "1234567890",
                                     address: "123, Street Name",
+                                    isFriend: friends[index].is_friend,
                                   ),
                                 ),
                               );

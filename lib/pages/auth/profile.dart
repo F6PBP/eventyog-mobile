@@ -1,4 +1,6 @@
 import 'package:eventyog_mobile/models/ProfileModel.dart';
+import 'package:eventyog_mobile/pages/auth/login.dart';
+import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -12,7 +14,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   Future<ProfileModel> fetchUserProfile(CookieRequest request) async {
     final response =
-        await request.get("${dotenv.env['HOSTNAME']}:8000/api/auth/profile/");
+        await request.get("http://10.0.2.2:8000/api/auth/profile/");
     return ProfileModel.fromJson(response);
   }
 
@@ -54,6 +56,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   Navigator.pop(context);
                 },
               ),
+            ),
+            bottomNavigationBar: const AnimatedBottomNavigationBar(
+              currentIndex: 4,
             ),
             body: Center(
               child: Padding(
@@ -104,8 +109,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     ElevatedButton.icon(
                       onPressed: () async {
                         // Perform logout operation here
-                        final response = await request.logout(
-                            "${dotenv.env['HOSTNAME']}8000/api/auth/logout/");
+                        final response = await request
+                            .logout("http://10.0.2.2:8000/api/auth/logout/");
                         String message = response["message"];
                         if (context.mounted) {
                           if (response['status']) {
@@ -113,7 +118,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text("$message Goodbye, $uname."),
                             ));
-                            Navigator.pop(context);
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginPage(),
+                              ),
+                            );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
