@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:eventyog_mobile/pages/events/event_list.dart'; // Mengimpor Event untuk tipe data
 
 class EventDetail extends StatelessWidget {
   final Event event;
@@ -15,6 +16,7 @@ class EventDetail extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Gambar acara
             Image.network(
               event.imageUrl,
               height: 250,
@@ -61,8 +63,7 @@ class EventDetail extends StatelessWidget {
               ),
             ),
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
                 "Speakers: ${event.speakers.join(", ")}",
                 style: TextStyle(
@@ -78,7 +79,7 @@ class EventDetail extends StatelessWidget {
                   // Logic to register or show interest
                   print('Registered for ${event.name}');
                 },
-                child: Text("Register Now"),
+                child: const Text("Register Now"),
               ),
             ),
           ],
@@ -86,22 +87,4 @@ class EventDetail extends StatelessWidget {
       ),
     );
   }
-}
-
-class Event {
-  final String name;
-  final String description;
-  final String date;
-  final String imageUrl;
-  final String location; // New field
-  final List<String> speakers; // New field
-
-  Event({
-    required this.name,
-    required this.description,
-    required this.date,
-    required this.imageUrl,
-    required this.location, // Added location parameter
-    required this.speakers, // Added speakers parameter
-  });
 }
