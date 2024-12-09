@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:eventyog_mobile/pages/merchandise/merchandise_list.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -46,7 +47,7 @@ class MyApp extends StatelessWidget {
             ),
             useMaterial3: true,
           ),
-          home: const LoginPage(),
+          home: MerchandiseList(),
         ));
   }
 }

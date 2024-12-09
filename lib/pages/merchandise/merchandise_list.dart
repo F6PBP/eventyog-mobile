@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'merchandise_card.dart';
 import 'merchandise_detail.dart';
+import 'create_merchandise.dart';
+import 'edit_merchandise.dart';
 
 class MerchandiseList extends StatefulWidget {
   @override
@@ -24,7 +26,6 @@ class _MerchandiseListState extends State<MerchandiseList> {
       final response = await http.get(Uri.parse("http://127.0.0.1:8000/api/merchandise/show/7e74fdc9-c388-4d16-ae1b-58eac2b1438e")); //nunggu id event
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
-        print(jsonResponse['data']);
         if (jsonResponse['data'] != null) {
           setState(() {
             merchandise = jsonResponse['data'];
@@ -36,7 +37,6 @@ class _MerchandiseListState extends State<MerchandiseList> {
         throw Exception('Failed to load merchandise');
       }
     } catch (e) {
-      print('Error: $e');
       setState(() {
         merchandise = _mockMerchandiseList();
       });
@@ -46,21 +46,24 @@ class _MerchandiseListState extends State<MerchandiseList> {
   List<dynamic> _mockMerchandiseList() {
     return [
       {
-        'imageUrl': 'https://via.placeholder.com/150',
+        'imageUrl': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Ariana_Grande_interview_2016.png/800px-Ariana_Grande_interview_2016.png',
         'name': 'Mock Item 1',
         'description': 'Description for mock item 1',
+        'quantity': 10,
         'price': 10.0,
       },
       {
-        'imageUrl': 'https://via.placeholder.com/150',
+        'imageUrl': 'https://cdn.antaranews.com/cache/1200x800/2023/06/30/3-Foto-Milkita-Bites-3.jpg',
         'name': 'Mock Item 2',
         'description': 'Description for mock item 2',
+        'quantity': 10,
         'price': 20.0,
       },
       {
-        'imageUrl': 'https://via.placeholder.com/150',
+        'imageUrl': 'https://cdn.antaranews.com/cache/1200x800/2023/06/30/3-Foto-Milkita-Bites-3.jpg',
         'name': 'Mock Item 3',
         'description': 'Description for mock item 3',
+        'quantity': 10,
         'price': 30.0,
       },
     ];
@@ -75,31 +78,53 @@ class _MerchandiseListState extends State<MerchandiseList> {
       body: ListView.builder(
         itemCount: merchandise.length,
         itemBuilder: (context, index) {
-          print(merchandise[index]);
-          return GestureDetector(
+          return MerchandiseCard(
+            imageUrl: merchandise[index]['imageUrl'],
+            quantity: merchandise[index]['quantity'],
+            name: merchandise[index]['name'],
+            description: merchandise[index]['description'],
+            price: merchandise[index]['price'].toString(),
+            isAdmin: false,
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => MerchandiseDetail(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => MerchandiseDetail(
                     imageUrl: merchandise[index]['imageUrl'],
                     name: merchandise[index]['name'],
                     description: merchandise[index]['description'],
                     price: merchandise[index]['price'].toString(),
                     isAdmin: true,
                   ),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0);
+                    const end = Offset.zero;
+                    const curve = Curves.ease;
+
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                    return SlideTransition(
+                      position: animation.drive(tween),
+                      child: child,
+                    );
+                  },
                 ),
               );
             },
-            child: MerchandiseCard(
-              imageUrl: merchandise[index]['imageUrl'],
-              name: merchandise[index]['name'],
-              description: merchandise[index]['description'],
-              price: merchandise[index]['price'].toString(),
-              isAdmin: false,
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateMerchandise(),
             ),
           );
         },
+        child: Icon(Icons.add),
+        tooltip: 'Create Merchandise',
       ),
     );
   }
