@@ -127,7 +127,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: const Icon(Icons.logout),
                       label: const Text('Logout'),
                       style: ElevatedButton.styleFrom(
-                        primary: Colors.redAccent,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 15),
                         shape: RoundedRectangleBorder(
