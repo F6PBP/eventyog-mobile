@@ -1,27 +1,29 @@
 import 'package:flutter/material.dart';
 
-class MerchandiseDetail extends StatelessWidget {
+class MerchandiseCard extends StatelessWidget {
   final String imageUrl;
   final String name;
   final String description;
   final String price;
   final bool isAdmin;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
-  MerchandiseDetail({
+  MerchandiseCard({
     required this.imageUrl,
     required this.name,
     required this.description,
     required this.price,
     required this.isAdmin,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(name),
-      ),
-      body: Padding(
+    return Card(
+      margin: EdgeInsets.all(16),
+      child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,17 +55,13 @@ class MerchandiseDetail extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () {
-                      // Handle edit action
-                    },
+                    onPressed: onEdit,
                     icon: Icon(Icons.edit),
                     label: Text('Edit'),
                   ),
                   SizedBox(width: 8),
                   ElevatedButton.icon(
-                    onPressed: () {
-                      // Handle delete action
-                    },
+                    onPressed: onDelete,
                     icon: Icon(Icons.delete),
                     label: Text('Delete'),
                     style: ElevatedButton.styleFrom(
