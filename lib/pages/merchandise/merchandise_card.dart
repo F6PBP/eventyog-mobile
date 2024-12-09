@@ -54,103 +54,85 @@ class _MerchandiseCardState extends State<MerchandiseCard> {
           borderRadius: BorderRadius.circular(15),
         ),
         elevation: 5,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                  child: Image.network(
-                    widget.imageUrl,
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Positioned(
-                  top: 5,
-                  right: 5,
-                  child: Container(
-                    padding: EdgeInsets.all(10), // Increase padding to make it larger
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      shape: BoxShape.circle, // Change to circular shape
+        child: Padding( // Add padding here
+          padding: const EdgeInsets.all(16.0), // Consistent padding around the card content
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.name,
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), // Adjusted font size
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    child: Text(
-                      '${widget.quantity}', // Display the quantity
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    SizedBox(height: 8),
+                    Text(
+                      widget.description,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700]), // Adjusted font size
+                      maxLines: 2, // Limit description to 2 lines
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.name,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    widget.description,
-                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Rp${widget.price}',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.remove),
-                            onPressed: _decreaseBoughtQuantity,
-                          ),
-                          Text(
-                            '$boughtQuantity', // Display the bought quantity
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.add),
-                            onPressed: _increaseBoughtQuantity,
-                          ),
-                        ],
-                      ),
-                      if (widget.isAdmin)
-                        Row(
-                          children: [
-                            ElevatedButton.icon(
-                              onPressed: widget.onEdit,
-                              icon: Icon(Icons.edit),
-                              label: Text('Edit'),
-                            ),
-                            SizedBox(width: 8),
-                            ElevatedButton.icon(
-                              onPressed: widget.onDelete,
-                              icon: Icon(Icons.delete),
-                              label: Text('Delete'),
-                              style: ElevatedButton.styleFrom(),
-                            ),
-                          ],
+                    SizedBox(height: 16),
+                    Text(
+                      'Rp${widget.price}',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green), // Adjusted font size
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.remove),
+                          onPressed: _decreaseBoughtQuantity,
                         ),
-                    ],
-                  ),
-                ],
+                        Text(
+                          '$boughtQuantity', // Display the bought quantity
+                          style: TextStyle(fontSize: 16), // Adjusted font size
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.add),
+                          onPressed: _increaseBoughtQuantity,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0), // Adjust padding for the image
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(15), // More rounded corners for the image
+                      child: Image.network(
+                        widget.imageUrl,
+                        height: 140, // Increased height for the image
+                        width: 140, // Increased width for the image
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: 5,
+                      right: 5,
+                      child: Container(
+                        padding: EdgeInsets.all(10), // Increase padding to make it larger
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          shape: BoxShape.circle, // Change to circular shape
+                        ),
+                        child: Text(
+                          '${widget.quantity}', // Display the quantity
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
