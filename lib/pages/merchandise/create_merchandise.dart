@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class CreateMerchandise extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
@@ -6,6 +8,35 @@ class CreateMerchandise extends StatelessWidget {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
+  final VoidCallback onCreate; // Add callback for refetching
+
+  CreateMerchandise({required this.onCreate}); // Initialize callback
+
+  Future<void> _createMerchandise(BuildContext context) async {
+    final url = Uri.parse('http://127.0.0.1:8000/api/merchandise/create/');
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+    final body = json.encode({
+      'name': _nameController.text,
+      'description': _descriptionController.text,
+      'price': double.parse(_priceController.text),
+      'image_url': _imageUrlController.text,
+      'event_id': '7e74fdc9-c388-4d16-ae1b-58eac2b1438e', // Replace with the actual event ID
+    });
+
+    final response = await http.post(url, headers: headers, body: body);
+
+    if (response.statusCode == 201) {
+      onCreate(); // Call the callback to refetch data
+      Navigator.pop(context); // Redirect to the previous page (list of merchandise)
+    } else {
+      // Handle error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to create merchandise')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,8 +160,7 @@ class CreateMerchandise extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // Handle form submission
-                      Navigator.pop(context); // Redirect to the previous page (list of merchandise)
+                      _createMerchandise(context);
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -154,4 +184,3 @@ class CreateMerchandise extends StatelessWidget {
     );
   }
 }
- // Add this semicolon

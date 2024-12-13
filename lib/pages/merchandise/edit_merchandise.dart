@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class EditMerchandise extends StatefulWidget {
   final String name;
   final String description;
   final String price;
   final String imageUrl;
+  final int id; // Add id parameter
+  final VoidCallback onEdit; // Add callback for refetching
 
   EditMerchandise({
     required this.name,
     required this.description,
     required this.price,
     required this.imageUrl,
+    required this.id, // Initialize id
+    required this.onEdit, // Initialize callback
   });
 
   @override
@@ -40,6 +46,35 @@ class _EditMerchandiseState extends State<EditMerchandise> {
     priceController.dispose();
     imageUrlController.dispose();
     super.dispose();
+  }
+
+  Future<void> _editMerchandise() async {
+    final url = Uri.parse('http://127.0.0.1:8000/api/merchandise/edit/${widget.id}/');
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+    final body = json.encode({
+      'name': nameController.text,
+      'description': descriptionController.text,
+      'price': double.parse(priceController.text),
+      'image_url': imageUrlController.text,
+    });
+
+    final response = await http.put(url, headers: headers, body: body);
+
+    if (response.statusCode == 200) {
+      widget.onEdit(); // Call the callback to refetch data
+      Navigator.pop(context, {
+        'name': nameController.text,
+        'description': descriptionController.text,
+        'price': priceController.text,
+        'imageUrl': imageUrlController.text,
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to edit merchandise')),
+      );
+    }
   }
 
   @override
@@ -133,12 +168,7 @@ class _EditMerchandiseState extends State<EditMerchandise> {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      Navigator.pop(context, {
-                        'name': nameController.text,
-                        'description': descriptionController.text,
-                        'price': priceController.text,
-                        'imageUrl': imageUrlController.text,
-                      });
+                      _editMerchandise();
                     }
                   },
                   style: ElevatedButton.styleFrom(

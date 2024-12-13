@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'edit_merchandise.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class MerchandiseDetail extends StatefulWidget {
   final String imageUrl;
@@ -7,6 +9,8 @@ class MerchandiseDetail extends StatefulWidget {
   final String description;
   final String price;
   final bool isAdmin;
+  final int id; // Add id parameter
+  final VoidCallback onEdit; // Add callback for refetching
 
   MerchandiseDetail({
     required this.imageUrl,
@@ -14,6 +18,8 @@ class MerchandiseDetail extends StatefulWidget {
     required this.description,
     required this.price,
     required this.isAdmin,
+    required this.id, // Initialize id
+    required this.onEdit, // Initialize callback
   });
 
   @override
@@ -44,6 +50,8 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
           description: description,
           price: price,
           imageUrl: imageUrl,
+          id: widget.id, // Pass id parameter
+          onEdit: widget.onEdit, // Pass callback
         ),
       ),
     );
@@ -55,6 +63,33 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
         price = result['price'];
         imageUrl = result['imageUrl'];
       });
+    }
+  }
+
+  Future<void> deleteMerchandise() async {
+    final url = "http://127.0.0.1:8000/api/merchandise/delete/${widget.id}/";
+    try {
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+        if (responseBody['status'] == 'success') {
+          widget.onEdit(); // Refetch merchandise list
+          Navigator.pop(context); // Go back to the previous screen
+        } else {
+          throw Exception('Failed to delete merchandise');
+        }
+      } else {
+        throw Exception('Failed to delete merchandise');
+      }
+    } catch (e) {
+      // Handle error appropriately
+      print('Error deleting merchandise: $e');
     }
   }
 
@@ -108,9 +143,7 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
                   ),
                   SizedBox(width: 8),
                   ElevatedButton.icon(
-                    onPressed: () {
-                      // Handle delete action
-                    },
+                    onPressed: deleteMerchandise, // Call delete function
                     icon: Icon(Icons.delete),
                     label: Text('Delete'),
                     style: ElevatedButton.styleFrom(
