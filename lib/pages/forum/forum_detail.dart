@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/pages/forum/reply_detail.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -353,6 +354,18 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
+                        icon: const Icon(Icons.open_in_new, color: Colors.green),
+                        tooltip: 'View this Reply as a Post',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ReplyDetailPage(replyId: reply['id']),
+                            ),
+                          );
+                        },
+                      ),
+                      IconButton(
                         icon: const Icon(Icons.thumb_up, color: Colors.blue),
                         onPressed: () {
                           likeReply(reply['id']);
@@ -369,7 +382,6 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                       IconButton(
                         icon: const Icon(Icons.reply, color: Colors.blue),
                         onPressed: () {
-                          // Balas reply ini
                           showReplyDialog(reply['id']);
                         },
                       ),
@@ -541,98 +553,103 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                       ),
                       const SizedBox(height: 10),
                       Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    forumPost!['title'],
-                                    style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      // Ganti menjadi Card
+                      child: Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      forumPost!['title'],
+                                      style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                                   ),
-                                ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (isAuthor)
-                                      IconButton(
-                                        icon: const Icon(Icons.edit, color: Colors.grey),
-                                        onPressed: () {
-                                          showEditDialog();
-                                        },
-                                      ),
-                                    if (isAuthor)
-                                      IconButton(
-                                        icon: const Icon(Icons.delete, color: Colors.red),
-                                        onPressed: () {
-                                          showDeleteDialog();
-                                        },
-                                      ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'by ${forumPost!['user']}',
-                              style: const TextStyle(
-                                  fontSize: 14, color: Colors.grey),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              forumPost!['content'],
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.thumb_up, color: Colors.blue),
-                                  onPressed: () {
-                                    toggleLikePost();
-                                  },
-                                ),
-                                Text('${forumPost!['total_likes']}'),
-                                IconButton(
-                                  icon: const Icon(Icons.thumb_down, color: Colors.red),
-                                  onPressed: () {
-                                    toggleDislikePost();
-                                  },
-                                ),
-                                Text('${forumPost!['total_dislikes']}'),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              forumPost!['created_at'],
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                // Reply top-level (ke post), jadi kirim null
-                                showReplyDialog(null);
-                              },
-                              icon: const Icon(Icons.reply),
-                              label: const Text('Reply to this Post'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (isAuthor)
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, color: Colors.grey),
+                                          onPressed: () {
+                                            showEditDialog();
+                                          },
+                                        ),
+                                      if (isAuthor)
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: Colors.red),
+                                          onPressed: () {
+                                            showDeleteDialog();
+                                          },
+                                        ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Text(
+                                'by ${forumPost!['user']}',
+                                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                forumPost!['content'],
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.thumb_up, color: Colors.blue),
+                                    onPressed: () {
+                                      toggleLikePost();
+                                    },
+                                  ),
+                                  Text('${forumPost!['total_likes']}'),
+                                  IconButton(
+                                    icon: const Icon(Icons.thumb_down, color: Colors.red),
+                                    onPressed: () {
+                                      toggleDislikePost();
+                                    },
+                                  ),
+                                  Text('${forumPost!['total_dislikes']}'),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                forumPost!['created_at'],
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  showReplyDialog(null);
+                                },
+                                icon: const Icon(Icons.reply),
+                                label: const Text('Reply to this Post'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
+                    ),
                       const SizedBox(height: 24),
                       const Text(
                         'Replies',
