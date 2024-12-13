@@ -24,7 +24,6 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Setelah build context tersedia, ambil username dari CookieRequest
       final request = context.read<CookieRequest>();
       username = request.jsonData['username'];
       fetchPostDetail();
@@ -220,9 +219,18 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
   Future<void> postReply(String content, [int? replyTo]) async {
     if (username == null || username!.isEmpty) return;
     try {
+          final body = <String, dynamic>{
+      'content': content,
+      'username': username,
+    };
+    if (replyTo != null) {
+      body['reply_to'] = replyTo;
+    }
+
+
       final response = await http.post(
         Uri.parse('http://127.0.0.1:8000/api/yogforum/post/${forumPost!['id']}/add_reply/'),
-        body: jsonEncode({'content': content, 'reply_to': replyTo, 'username': username}),
+        body: jsonEncode(body),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -238,6 +246,64 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     }
   }
 
+  Future<void> deletePost() async {
+    if (username == null || username!.isEmpty) return;
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/api/yogforum/post/${forumPost!['id']}/delete/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': username}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Post deleted successfully!')),
+          );
+          Navigator.pop(context); 
+        } else {
+          throw Exception('Failed to delete post: ${data['message']}');
+        }
+      } else {
+        throw Exception('Failed to delete post');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting post: $e')),
+      );
+    }
+  }
+
+  Future<void> deleteReply(int replyId) async {
+    if (username == null || username!.isEmpty) return;
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/api/yogforum/reply/$replyId/delete/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': username}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Reply deleted successfully!')),
+          );
+          fetchPostDetail();
+        } else {
+          throw Exception('Failed to delete reply: ${data['message']}');
+        }
+      } else {
+        throw Exception('Failed to delete reply');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting reply: $e')),
+      );
+    }
+  }
+
   Widget buildReplies(List<Map<String, dynamic>> replyList, {int depth = 0}) {
     return ListView.builder(
       shrinkWrap: true,
@@ -245,6 +311,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
       itemCount: replyList.length,
       itemBuilder: (context, index) {
         final reply = replyList[index];
+        final isReplyAuthor = username != null && reply['user'] == username;
 
         return Padding(
           padding: EdgeInsets.only(left: depth * 16.0, bottom: 8.0),
@@ -285,7 +352,6 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Tombol Like Reply
                       IconButton(
                         icon: const Icon(Icons.thumb_up, color: Colors.blue),
                         onPressed: () {
@@ -293,7 +359,6 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                         },
                       ),
                       Text('${reply['total_likes'] ?? 0}'),
-                      // Tombol Dislike Reply
                       IconButton(
                         icon: const Icon(Icons.thumb_down, color: Colors.red),
                         onPressed: () {
@@ -304,9 +369,38 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                       IconButton(
                         icon: const Icon(Icons.reply, color: Colors.blue),
                         onPressed: () {
+                          // Balas reply ini
                           showReplyDialog(reply['id']);
                         },
                       ),
+                      if (isReplyAuthor)
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) {
+                                return AlertDialog(
+                                  title: const Text('Delete Reply'),
+                                  content: const Text('Are you sure you want to delete this reply?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(ctx);
+                                        deleteReply(reply['id']);
+                                      },
+                                      child: const Text('Delete'),
+                                    )
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                        ),
                     ],
                   ),
                 ),
@@ -318,13 +412,14 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     );
   }
 
-  void showReplyDialog(int replyToId) {
+  // Ubah showReplyDialog agar menerima int? replyToId
+  void showReplyDialog(int? replyToId) {
     final replyController = TextEditingController();
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Reply to Comment'),
+          title: Text(replyToId == null ? 'Reply to Post' : 'Reply to Comment'),
           content: TextField(
             controller: replyController,
             maxLines: 3,
@@ -392,6 +487,31 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     );
   }
 
+  void showDeleteDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Delete Post'),
+          content: const Text('Are you sure you want to delete this post?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                deletePost();
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAuthor = forumPost != null && username != null && forumPost!['user'] == username;
@@ -417,8 +537,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                       TextButton.icon(
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.arrow_left, color: Colors.grey),
-                        label:
-                            const Text('Back', style: TextStyle(color: Colors.grey)),
+                        label: const Text('Back', style: TextStyle(color: Colors.grey)),
                       ),
                       const SizedBox(height: 10),
                       Container(
@@ -441,13 +560,25 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                                         fontWeight: FontWeight.bold),
                                   ),
                                 ),
-                                if (isAuthor)
-                                  IconButton(
-                                    icon: const Icon(Icons.edit, color: Colors.grey),
-                                    onPressed: () {
-                                      showEditDialog();
-                                    },
-                                  ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (isAuthor)
+                                      IconButton(
+                                        icon: const Icon(Icons.edit, color: Colors.grey),
+                                        onPressed: () {
+                                          showEditDialog();
+                                        },
+                                      ),
+                                    if (isAuthor)
+                                      IconButton(
+                                        icon: const Icon(Icons.delete, color: Colors.red),
+                                        onPressed: () {
+                                          showDeleteDialog();
+                                        },
+                                      ),
+                                  ],
+                                ),
                               ],
                             ),
                             const SizedBox(height: 4),
@@ -465,16 +596,14 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                             Row(
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.thumb_up,
-                                      color: Colors.blue),
+                                  icon: const Icon(Icons.thumb_up, color: Colors.blue),
                                   onPressed: () {
                                     toggleLikePost();
                                   },
                                 ),
                                 Text('${forumPost!['total_likes']}'),
                                 IconButton(
-                                  icon: const Icon(Icons.thumb_down,
-                                      color: Colors.red),
+                                  icon: const Icon(Icons.thumb_down, color: Colors.red),
                                   onPressed: () {
                                     toggleDislikePost();
                                   },
@@ -491,7 +620,8 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                             const SizedBox(height: 16),
                             ElevatedButton.icon(
                               onPressed: () {
-                                showReplyDialog(forumPost!['id']);
+                                // Reply top-level (ke post), jadi kirim null
+                                showReplyDialog(null);
                               },
                               icon: const Icon(Icons.reply),
                               label: const Text('Reply to this Post'),

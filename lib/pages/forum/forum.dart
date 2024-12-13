@@ -22,15 +22,20 @@ class _ForumPageState extends State<ForumPage> {
       isLoading = true;
     });
 
+    String url = 'http://127.0.0.1:8000/api/yogforum/';
+    if (query.isNotEmpty) {
+      url = 'http://localhost:8000/api/yogforum/search?keyword=$query';
+    }
+
     try {
-      final response = await http.get(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/'),
-      );
+      final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          forumPosts = List<Map<String, dynamic>>.from(data['forum_posts']);
+          forumPosts = List<Map<String, dynamic>>.from(
+            data['results'] ?? data['forum_posts'] ?? []
+          );
           isLoading = false;
         });
       } else {
@@ -81,6 +86,7 @@ class _ForumPageState extends State<ForumPage> {
                       ),
                     ),
                     onChanged: (value) {
+                      // Setiap kali teks berubah, kita fetchPosts dengan keyword baru
                       fetchPosts(value);
                     },
                   ),
@@ -102,24 +108,26 @@ class _ForumPageState extends State<ForumPage> {
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    itemCount: forumPosts.length,
-                    itemBuilder: (context, index) {
-                      final post = forumPosts[index];
-                      return ListTile(
-                        title: Text(post['title']),
-                        subtitle: Text('By ${post['user']}'),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ForumDetailPage(postId: post['id']),
-                            ),
-                          ).then((_) => fetchPosts(''));
+                : forumPosts.isEmpty
+                    ? const Center(child: Text('No posts found.'))
+                    : ListView.builder(
+                        itemCount: forumPosts.length,
+                        itemBuilder: (context, index) {
+                          final post = forumPosts[index];
+                          return ListTile(
+                            title: Text(post['title']),
+                            subtitle: Text('By ${post['user']}'),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ForumDetailPage(postId: post['id']),
+                                ),
+                              ).then((_) => fetchPosts(_searchController.text));
+                            },
+                          );
                         },
-                      );
-                    },
-                  ),
+                      ),
           ),
         ],
       ),
