@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class AddPostPage extends StatefulWidget {
   const AddPostPage({Key? key}) : super(key: key);
@@ -20,18 +22,35 @@ class _AddPostPageState extends State<AddPostPage> {
     });
 
     try {
-      final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/add_post_flutter/'),
-        body: {
-          'title': _titleController.text,
-          'content': _contentController.text,
-        },
-      );
+      // Ambil request dari provider
+      final request = context.read<CookieRequest>();
+      // Ambil username yang sudah disimpan saat login
+      final String? username = request.jsonData['username'];
 
-      if (response.statusCode == 200) {
+      if (username == null || username.isEmpty) {
+        throw Exception('Username not found. Make sure you are logged in.');
+      }
+
+      final response = await http.post(
+      Uri.parse('http://127.0.0.1:8000/api/yogforum/add-post/'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'username': username,
+        'title': _titleController.text,
+        'content': _contentController.text,
+      }),
+    );
+
+      if (response.statusCode == 201) {
+        // Jika berhasil, kembali ke halaman sebelumnya atau tampilkan pesan sukses
         Navigator.pop(context);
       } else {
-        throw Exception('Failed to add post');
+        // Jika gagal, tampilkan error dari response
+        final responseData = jsonDecode(response.body);
+        final message = responseData['message'] ?? 'Failed to add post';
+        throw Exception(message);
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -46,6 +65,10 @@ class _AddPostPageState extends State<AddPostPage> {
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+    // Cek username (opsional, untuk debugging)
+    // print("Logged in as: ${request.jsonData['username']}");
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Post'),
@@ -60,15 +83,19 @@ class _AddPostPageState extends State<AddPostPage> {
                 labelText: 'Title',
               ),
             ),
+            const SizedBox(height: 16.0),
             TextField(
               controller: _contentController,
               decoration: const InputDecoration(
                 labelText: 'Content',
               ),
             ),
+            const SizedBox(height: 24.0),
             ElevatedButton(
               onPressed: isLoading ? null : addPost,
-              child: isLoading ? const CircularProgressIndicator() : const Text('Submit'),
+              child: isLoading 
+                  ? const CircularProgressIndicator() 
+                  : const Text('Submit'),
             ),
           ],
         ),
