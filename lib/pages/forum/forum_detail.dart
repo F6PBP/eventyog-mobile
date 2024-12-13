@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
 
 class ForumDetailPage extends StatefulWidget {
   final int postId;
@@ -16,13 +18,30 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
   List<Map<String, dynamic>> replies = [];
   bool isLoading = true;
 
+  String? username; // Akan kita ambil dari CookieRequest
+
   @override
   void initState() {
     super.initState();
-    fetchPostDetail();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Setelah build context tersedia, ambil username dari CookieRequest
+      final request = context.read<CookieRequest>();
+      username = request.jsonData['username'];
+      fetchPostDetail();
+    });
   }
 
   Future<void> fetchPostDetail() async {
+    if (username == null || username!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Username not found. Make sure you are logged in.')),
+      );
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
     try {
       final response = await http.get(
         Uri.parse('http://127.0.0.1:8000/api/yogforum/post/${widget.postId}/'),
@@ -54,11 +73,12 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
   }
 
   Future<void> toggleLikePost() async {
+    if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse(
-            'http://127.0.0.1:8000/api/yogforum/like_post/${widget.postId}/'),
+        Uri.parse('http://127.0.0.1:8000/api/yogforum/like_post/${widget.postId}/'),
         headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': username}),
       );
 
       if (response.statusCode == 200) {
@@ -82,12 +102,127 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     }
   }
 
-  Future<void> postReply(String content, [int? replyTo]) async {
+  Future<void> toggleDislikePost() async {
+    if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse(
-            'http://127.0.0.1:8000/api/yogforum/post/${forumPost!['id']}/add_reply/'),
-        body: jsonEncode({'content': content, 'reply_to': replyTo}),
+        Uri.parse('http://127.0.0.1:8000/api/yogforum/dislike_post/${widget.postId}/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': username}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success']) {
+          setState(() {
+            forumPost!['total_likes'] = data['total_likes'];
+            forumPost!['total_dislikes'] = data['total_dislikes'];
+          });
+        } else {
+          throw Exception('Gagal melakukan dislike: ${data['message']}');
+        }
+      } else {
+        throw Exception('Failed to dislike post');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error disliking post: $e')),
+      );
+    }
+  }
+
+  Future<void> likeReply(int replyId) async {
+    if (username == null || username!.isEmpty) return;
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/api/yogforum/like_reply/$replyId/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': username}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          fetchPostDetail();
+        } else {
+          throw Exception('Failed to like reply: ${data['message']}');
+        }
+      } else {
+        throw Exception('Failed to like reply');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error liking reply: $e')),
+      );
+    }
+  }
+
+  Future<void> dislikeReply(int replyId) async {
+    if (username == null || username!.isEmpty) return;
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/api/yogforum/dislike_reply/$replyId/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': username}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          fetchPostDetail();
+        } else {
+          throw Exception('Failed to dislike reply: ${data['message']}');
+        }
+      } else {
+        throw Exception('Failed to dislike reply');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error disliking reply: $e')),
+      );
+    }
+  }
+
+  Future<void> editPost(String newTitle, String newContent) async {
+    if (username == null || username!.isEmpty) return;
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/api/yogforum/edit/${forumPost!['id']}/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'title': newTitle,
+          'content': newContent,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          fetchPostDetail();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Post edited successfully!')),
+          );
+        } else {
+          throw Exception('Failed to edit post: ${data['message']}');
+        }
+      } else {
+        throw Exception('Failed to edit post');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error editing post: $e')),
+      );
+    }
+  }
+
+  Future<void> postReply(String content, [int? replyTo]) async {
+    if (username == null || username!.isEmpty) return;
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/api/yogforum/post/${forumPost!['id']}/add_reply/'),
+        body: jsonEncode({'content': content, 'reply_to': replyTo, 'username': username}),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -110,6 +245,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
       itemCount: replyList.length,
       itemBuilder: (context, index) {
         final reply = replyList[index];
+
         return Padding(
           padding: EdgeInsets.only(left: depth * 16.0, bottom: 8.0),
           child: Container(
@@ -118,37 +254,63 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
               borderRadius: BorderRadius.circular(8),
             ),
             margin: const EdgeInsets.symmetric(vertical: 4.0),
-            child: ListTile(
-              title: Padding(
-                padding: const EdgeInsets.only(bottom: 4.0),
-                child: Text(
-                  reply['content'],
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '– ${reply['user']}',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  if (reply['replies'] != null && reply['replies'].isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: buildReplies(
-                          List<Map<String, dynamic>>.from(reply['replies']),
-                          depth: depth + 1),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ListTile(
+                  title: Padding(
+                    padding: const EdgeInsets.only(bottom: 4.0),
+                    child: Text(
+                      reply['content'],
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w500),
                     ),
-                ],
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.reply, color: Colors.blue),
-                onPressed: () {
-                  showReplyDialog(reply['id']);
-                },
-              ),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '– ${reply['user']}',
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      if (reply['replies'] != null && reply['replies'].isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: buildReplies(
+                              List<Map<String, dynamic>>.from(reply['replies']),
+                              depth: depth + 1),
+                        ),
+                    ],
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Tombol Like Reply
+                      IconButton(
+                        icon: const Icon(Icons.thumb_up, color: Colors.blue),
+                        onPressed: () {
+                          likeReply(reply['id']);
+                        },
+                      ),
+                      Text('${reply['total_likes'] ?? 0}'),
+                      // Tombol Dislike Reply
+                      IconButton(
+                        icon: const Icon(Icons.thumb_down, color: Colors.red),
+                        onPressed: () {
+                          dislikeReply(reply['id']);
+                        },
+                      ),
+                      Text('${reply['total_dislikes'] ?? 0}'),
+                      IconButton(
+                        icon: const Icon(Icons.reply, color: Colors.blue),
+                        onPressed: () {
+                          showReplyDialog(reply['id']);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         );
@@ -188,8 +350,52 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     );
   }
 
+  void showEditDialog() {
+    final titleController = TextEditingController(text: forumPost!['title']);
+    final contentController = TextEditingController(text: forumPost!['content']);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Edit Post'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(labelText: 'Title'),
+                ),
+                TextField(
+                  controller: contentController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(labelText: 'Content'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                editPost(titleController.text, contentController.text);
+                Navigator.pop(context);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isAuthor = forumPost != null && username != null && forumPost!['user'] == username;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Forum Post Details'),
@@ -211,8 +417,8 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                       TextButton.icon(
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.arrow_left, color: Colors.grey),
-                        label: const Text('Back',
-                            style: TextStyle(color: Colors.grey)),
+                        label:
+                            const Text('Back', style: TextStyle(color: Colors.grey)),
                       ),
                       const SizedBox(height: 10),
                       Container(
@@ -235,6 +441,13 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                                         fontWeight: FontWeight.bold),
                                   ),
                                 ),
+                                if (isAuthor)
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Colors.grey),
+                                    onPressed: () {
+                                      showEditDialog();
+                                    },
+                                  ),
                               ],
                             ),
                             const SizedBox(height: 4),
@@ -263,6 +476,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                                   icon: const Icon(Icons.thumb_down,
                                       color: Colors.red),
                                   onPressed: () {
+                                    toggleDislikePost();
                                   },
                                 ),
                                 Text('${forumPost!['total_dislikes']}'),
