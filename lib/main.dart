@@ -18,7 +18,6 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 Future<void> main() async {
-  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
   HttpOverrides.global = MyHttpOverrides();
 }

@@ -1,6 +1,8 @@
 import 'package:eventyog_mobile/models/ProfileModel.dart';
+import 'package:eventyog_mobile/pages/auth/edit_profile.dart';
+import 'package:eventyog_mobile/pages/auth/login.dart';
+import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -12,7 +14,8 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   Future<ProfileModel> fetchUserProfile(CookieRequest request) async {
     final response =
-        await request.get("${dotenv.env['HOSTNAME']}:8000/api/auth/profile/");
+        await request.get("http://10.0.2.2:8000/api/auth/profile/");
+
     return ProfileModel.fromJson(response);
   }
 
@@ -55,11 +58,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
               ),
             ),
+            bottomNavigationBar: const AnimatedBottomNavigationBar(
+              currentIndex: 4,
+            ),
             body: Center(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     CircleAvatar(
@@ -101,11 +107,54 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     const SizedBox(height: 30),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Wrap(
+                        spacing: 8.0,
+                        runSpacing: 4.0,
+                        children: profile.data.categories != null
+                            ? profile.data.categories!
+                                .split(',')
+                                .map<Widget>((category) {
+                                // Safely cast to String if possible and wrap it in a Chip widget
+                                final categoryName = category.toString();
+                                return Chip(
+                                  label: Text(categoryName),
+                                  backgroundColor: Colors.blue.shade100,
+                                  labelStyle:
+                                      const TextStyle(color: Colors.blue),
+                                );
+                              }).toList()
+                            : [const Text("No categories available")],
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // Navigate to the edit profile page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditProfilePage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Edit Profile'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     ElevatedButton.icon(
                       onPressed: () async {
                         // Perform logout operation here
-                        final response = await request.logout(
-                            "${dotenv.env['HOSTNAME']}8000/api/auth/logout/");
+                        final response = await request
+                            .logout("http://10.0.2.2:8000/api/auth/logout/");
                         String message = response["message"];
                         if (context.mounted) {
                           if (response['status']) {
@@ -113,7 +162,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text("$message Goodbye, $uname."),
                             ));
-                            Navigator.pop(context);
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginPage(),
+                              ),
+                            );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(

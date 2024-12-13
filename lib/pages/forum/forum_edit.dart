@@ -2,28 +2,28 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class AddPostPage extends StatefulWidget {
-  const AddPostPage({Key? key}) : super(key: key);
+class EditPostPage extends StatefulWidget {
+  final int postId;
+
+  const EditPostPage({required this.postId, Key? key}) : super(key: key);
 
   @override
-  State<AddPostPage> createState() => _AddPostPageState();
+  State<EditPostPage> createState() => _EditPostPageState();
 }
 
-class _AddPostPageState extends State<AddPostPage> {
-  final TextEditingController _titleController = TextEditingController();
+class _EditPostPageState extends State<EditPostPage> {
   final TextEditingController _contentController = TextEditingController();
   bool isLoading = false;
 
-  Future<void> addPost() async {
+  Future<void> editPost() async {
     setState(() {
       isLoading = true;
     });
 
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/add_post_flutter/'),
+        Uri.parse('http://127.0.0.1:8000/api/yogforum/edit/${widget.postId}/'),
         body: {
-          'title': _titleController.text,
           'content': _contentController.text,
         },
       );
@@ -31,11 +31,11 @@ class _AddPostPageState extends State<AddPostPage> {
       if (response.statusCode == 200) {
         Navigator.pop(context);
       } else {
-        throw Exception('Failed to add post');
+        throw Exception('Failed to edit post');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error adding post: $e')),
+        SnackBar(content: Text('Error editing post: $e')),
       );
     } finally {
       setState(() {
@@ -48,18 +48,12 @@ class _AddPostPageState extends State<AddPostPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Post'),
+        title: const Text('Edit Post'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-              ),
-            ),
             TextField(
               controller: _contentController,
               decoration: const InputDecoration(
@@ -67,7 +61,7 @@ class _AddPostPageState extends State<AddPostPage> {
               ),
             ),
             ElevatedButton(
-              onPressed: isLoading ? null : addPost,
+              onPressed: isLoading ? null : editPost,
               child: isLoading ? const CircularProgressIndicator() : const Text('Submit'),
             ),
           ],
