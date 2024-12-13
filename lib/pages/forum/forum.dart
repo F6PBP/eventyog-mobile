@@ -24,7 +24,7 @@ class _ForumPageState extends State<ForumPage> {
 
     String url = 'http://127.0.0.1:8000/api/yogforum/';
     if (query.isNotEmpty) {
-      url = 'http://localhost:8000/api/yogforum/search?keyword=$query';
+      url = 'http://127.0.0.1:8000/api/yogforum?keyword=$query';
     }
 
     try {
@@ -34,8 +34,7 @@ class _ForumPageState extends State<ForumPage> {
         final data = jsonDecode(response.body);
         setState(() {
           forumPosts = List<Map<String, dynamic>>.from(
-            data['results'] ?? data['forum_posts'] ?? []
-          );
+              data['results'] ?? data['forum_posts'] ?? []);
           isLoading = false;
         });
       } else {
@@ -86,7 +85,6 @@ class _ForumPageState extends State<ForumPage> {
                       ),
                     ),
                     onChanged: (value) {
-                      // Setiap kali teks berubah, kita fetchPosts dengan keyword baru
                       fetchPosts(value);
                     },
                   ),
@@ -96,11 +94,16 @@ class _ForumPageState extends State<ForumPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const AddPostPage()),
-                    ).then((_) => fetchPosts(''));
+                      MaterialPageRoute(
+                          builder: (context) => const AddPostPage()),
+                    ).then((_) => fetchPosts(_searchController.text));
                   },
                   icon: const Icon(Icons.add),
                   label: const Text('Add Post'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
                 ),
               ],
             ),
@@ -111,20 +114,56 @@ class _ForumPageState extends State<ForumPage> {
                 : forumPosts.isEmpty
                     ? const Center(child: Text('No posts found.'))
                     : ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
                         itemCount: forumPosts.length,
                         itemBuilder: (context, index) {
                           final post = forumPosts[index];
-                          return ListTile(
-                            title: Text(post['title']),
-                            subtitle: Text('By ${post['user']}'),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ForumDetailPage(postId: post['id']),
+                          final String postTime = (post['created_at']);
+
+                          return Card(
+                            elevation: 2,
+                            margin: const EdgeInsets.symmetric(vertical: 8.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.blue.shade100,
+                                child: const Icon(Icons.person,
+                                    color: Colors.blue),
+                              ),
+                              title: Text(
+                                post['title'],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
                                 ),
-                              ).then((_) => fetchPosts(_searchController.text));
-                            },
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('By ${post['user']}'),
+                                  const SizedBox(height: 4),
+                                  Text('Posted on $postTime',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600])),
+                                ],
+                              ),
+                              trailing: const Icon(Icons.arrow_forward_ios,
+                                  size: 16, color: Colors.grey),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ForumDetailPage(postId: post['id']),
+                                  ),
+                                ).then(
+                                    (_) => fetchPosts(_searchController.text));
+                              },
+                            ),
                           );
                         },
                       ),
