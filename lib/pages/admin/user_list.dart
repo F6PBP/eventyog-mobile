@@ -1,161 +1,205 @@
-import 'package:eventyog_mobile/models/ProfileModel.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:eventyog_mobile/models/ProfileModel.dart';
 
-class AdminPage extends StatefulWidget {
+class AdminUserListPage extends StatefulWidget {
+  const AdminUserListPage({Key? key}) : super(key: key);
+
   @override
-  State<AdminPage> createState() => _AdminPageState();
+  _AdminUserListPageState createState() => _AdminUserListPageState();
 }
 
-class _AdminPageState extends State<AdminPage> {
-  Future<ProfileModel> fetchUserProfile(CookieRequest request) async {
-    final response =
-        await request.get("http://localhost:8000/api/auth/profile/");
+class _AdminUserListPageState extends State<AdminUserListPage> {
+  List<ProfileModel> _users = [];
+  List<ProfileModel> _filteredUsers = [];
+  final TextEditingController _searchController = TextEditingController();
 
-    print(response);
-    return ProfileModel.fromJson(response);
+  Future<void> fetchUsers(CookieRequest request) async {
+    try {
+      final response = await request.get("http://127.0.0.1:8000/api/auth/profile/");
+      
+      if (response != null && response is List) {
+        setState(() {
+          _users = response.map((userJson) => ProfileModel.fromJson(userJson)).toList();
+          _filteredUsers = _users;
+        });
+      } else {
+        print('Unexpected response format');
+      }
+    } catch (e) {
+      print('Error fetching users: $e');
+    }
+  }
+
+  void _filterUsers(String query) {
+    setState(() {
+      _filteredUsers = _users
+          .where((user) => 
+            user.data.name!.toLowerCase().contains(query.toLowerCase()) || 
+            user.data.email!.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
+  }
+
+  void _showAddUserModal() {
+    showModalBottomSheet(
+      context: context, 
+      isScrollControlled: true,
+      builder: (context) => SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 20
+          ),
+          child: _buildAddUserForm(),
+        ),
+      )
+    );
+  }
+
+  Widget _buildAddUserForm() {
+    // Implement your add user form logic here
+    return Column(
+      children: [
+        Text(
+          'Create New User', 
+          style: Theme.of(context).textTheme.titleLarge
+        ),
+        // Add form fields for username, email, password, etc.
+        ElevatedButton(
+          onPressed: () {
+            // Implement user creation logic
+            Navigator.of(context).pop();
+          }, 
+          child: Text('Create User')
+        )
+      ],
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final request = context.read<CookieRequest>();
+      fetchUsers(request);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
-    return FutureBuilder<ProfileModel>(
-      future: fetchUserProfile(request),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        } else if (snapshot.hasError) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text("Profile"),
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Admin Dashboard'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _showAddUserModal,
+          )
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search Users...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12)
+                )
               ),
+              onChanged: _filterUsers,
             ),
-            body: Center(
-              child: Text('Error: ${snapshot.error}'),
-            ),
-          );
-        } else if (snapshot.hasData) {
-          final profile = snapshot.data!;
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text("Profile"),
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundImage: NetworkImage(profile.data.imageUrl!),
-                      backgroundColor: Colors.grey.shade300,
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      profile.data.username!,
-                      style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      profile.data.name!,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      profile.data.email!,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      profile.data.bio!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        // Perform logout operation here
-                        final response = await request
-                            .logout("http://localhost:8000/api/auth/logout/");
-                        String message = response["message"];
-                        if (context.mounted) {
-                          if (response['status']) {
-                            String uname = response["username"];
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("$message Goodbye, $uname."),
-                            ));
-                            Navigator.pop(context);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(message),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      icon: const Icon(Icons.logout),
-                      label: const Text('Logout'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        } else {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text("Profile"),
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-            body: const Center(
-              child: Text('No profile data found'),
-            ),
-          );
-        }
+          ),
+          Expanded(
+            child: _buildUserGrid()
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserGrid() {
+    return _filteredUsers.isEmpty 
+      ? const Center(child: Text('No users found'))
+      : GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.7,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10
+          ),
+          itemCount: _filteredUsers.length,
+          itemBuilder: (context, index) {
+            final user = _filteredUsers[index];
+            return _buildUserCard(user);
+          },
+        );
+  }
+
+  Widget _buildUserCard(ProfileModel user) {
+    return GestureDetector(
+      onTap: () {
+        // Navigate to user detail page
+        // Navigator.push(context, MaterialPageRoute(...))
       },
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15)
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: user.data.imageUrl != null 
+                ? NetworkImage(user.data.imageUrl!)
+                : const AssetImage('assets/placeholder_avatar.png') as ImageProvider,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              user.data.name ?? '', 
+              style: Theme.of(context).textTheme.titleMedium
+            ),
+            Text(
+              user.data.email ?? '', 
+              style: Theme.of(context).textTheme.bodyMedium
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 4.0,
+              children: user.data.categories != null
+                  ? user.data.categories!
+                      .split(',')
+                      .map<Widget>((category) => Chip(
+                            label: Text(category),
+                            backgroundColor: Colors.blue.shade100,
+                            labelStyle: const TextStyle(color: Colors.blue),
+                          ))
+                      .toList() // Convert Iterable to List
+                  : [const Text("No categories")],
+            ),
+
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                // Add edit or view details functionality
+              }, 
+              child: const Text('View Details')
+            )
+          ],
+        ),
+      ),
     );
   }
 }

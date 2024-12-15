@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:eventyog_mobile/pages/auth/onboarding.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -95,7 +97,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   String password2 = _confirmPasswordController.text;
 
                   final response = await request.postJson(
-                      "http://localhost:8000/api/auth/register/",
+                      "http://10.0.2.2:8000/api/auth/register/",
                       jsonEncode({
                         "username": username,
                         "password1": password1,
@@ -109,7 +111,22 @@ class _RegisterPageState extends State<RegisterPage> {
                           content: Text('Successfully registered!'),
                         ),
                       );
-                      Navigator.pop(context);
+
+                      await request
+                          .login("http://10.0.2.2:8000/api/auth/login/", {
+                        'username': username,
+                        'password': password1,
+                      });
+
+                      if (request.loggedIn) {
+                        if (context.mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const OnboardingPage()),
+                          );
+                        }
+                      }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

@@ -40,7 +40,7 @@ class Data {
   DateTime dateJoined;
   String bio;
   String imageUrl;
-  dynamic categories;
+  String? categories;
 
   Data({
     required this.username,
