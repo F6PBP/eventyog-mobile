@@ -142,8 +142,7 @@ class FriendDetailPage extends StatelessWidget {
                     icon: Icon(Icons.person_remove),
                     label: Text("Remove Friend"),
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.redAccent,
-                      onPrimary: Colors.white,
+        
                       padding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       textStyle: TextStyle(fontSize: 16),
@@ -156,8 +155,7 @@ class FriendDetailPage extends StatelessWidget {
                     icon: Icon(Icons.person_add),
                     label: Text("Add Friend"),
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.blueAccent,
-                      onPrimary: Colors.white,
+                
                       padding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       textStyle: TextStyle(fontSize: 16),
