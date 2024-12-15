@@ -8,6 +8,7 @@ class CreateMerchandise extends StatelessWidget {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
   final VoidCallback onCreate; // Add callback for refetching
 
   CreateMerchandise({required this.onCreate}); // Initialize callback
@@ -22,6 +23,7 @@ class CreateMerchandise extends StatelessWidget {
       'description': _descriptionController.text,
       'price': double.parse(_priceController.text),
       'image_url': _imageUrlController.text,
+      'quantity': int.parse(_quantityController.text),
       'event_id': '7e74fdc9-c388-4d16-ae1b-58eac2b1438e', // Replace with the actual event ID
     });
 
@@ -152,6 +154,35 @@ class CreateMerchandise extends StatelessWidget {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter an image URL';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                TextFormField(
+                  controller: _quantityController,
+                  decoration: InputDecoration(
+                    labelText: 'Quantity',
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 12.0),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a quantity';
+                    }
+                    final quantity = int.tryParse(value);
+                    if (quantity == null) {
+                      return 'Quantity must be a number';
+                    }
+                    if (quantity < 1) {
+                      return 'Quantity must be at least 1';
                     }
                     return null;
                   },

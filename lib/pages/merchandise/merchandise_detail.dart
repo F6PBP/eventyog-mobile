@@ -11,6 +11,7 @@ class MerchandiseDetail extends StatefulWidget {
   final bool isAdmin;
   final int id; // Add id parameter
   final VoidCallback onEdit; // Add callback for refetching
+  final String quantity; // Add quantity parameter
 
   MerchandiseDetail({
     required this.imageUrl,
@@ -20,6 +21,7 @@ class MerchandiseDetail extends StatefulWidget {
     required this.isAdmin,
     required this.id, // Initialize id
     required this.onEdit, // Initialize callback
+    required this.quantity, // Initialize quantity
   });
 
   @override
@@ -31,6 +33,7 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
   late String description;
   late String price;
   late String imageUrl;
+  late String quantity;
 
   @override
   void initState() {
@@ -39,6 +42,7 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
     description = widget.description;
     price = widget.price;
     imageUrl = widget.imageUrl;
+    quantity = widget.quantity;
   }
 
   void _editMerchandise() async {
@@ -52,6 +56,7 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
           imageUrl: imageUrl,
           id: widget.id, // Pass id parameter
           onEdit: widget.onEdit, // Pass callback
+          quantity: widget.quantity, // Pass quantity parameter
         ),
       ),
     );
@@ -62,6 +67,7 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
         description = result['description'];
         price = result['price'];
         imageUrl = result['imageUrl'];
+        quantity = result['quantity']; // Update quantity
       });
     }
   }

@@ -9,6 +9,7 @@ class EditMerchandise extends StatefulWidget {
   final String imageUrl;
   final int id; // Add id parameter
   final VoidCallback onEdit; // Add callback for refetching
+  final String quantity; // Add quantity parameter
 
   EditMerchandise({
     required this.name,
@@ -17,7 +18,14 @@ class EditMerchandise extends StatefulWidget {
     required this.imageUrl,
     required this.id, // Initialize id
     required this.onEdit, // Initialize callback
-  });
+    required this.quantity, // Initialize quantity
+  }) : assert(name != null),
+       assert(description != null),
+       assert(price != null),
+       assert(imageUrl != null),
+       assert(id != null),
+       assert(onEdit != null),
+       assert(quantity != null); // Ensure all parameters are not null
 
   @override
   _EditMerchandiseState createState() => _EditMerchandiseState();
@@ -28,6 +36,7 @@ class _EditMerchandiseState extends State<EditMerchandise> {
   late TextEditingController descriptionController;
   late TextEditingController priceController;
   late TextEditingController imageUrlController;
+  late TextEditingController quantityController;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -37,6 +46,7 @@ class _EditMerchandiseState extends State<EditMerchandise> {
     descriptionController = TextEditingController(text: widget.description);
     priceController = TextEditingController(text: widget.price);
     imageUrlController = TextEditingController(text: widget.imageUrl);
+    quantityController = TextEditingController(text: widget.quantity);
   }
 
   @override
@@ -45,6 +55,7 @@ class _EditMerchandiseState extends State<EditMerchandise> {
     descriptionController.dispose();
     priceController.dispose();
     imageUrlController.dispose();
+    quantityController.dispose();
     super.dispose();
   }
 
@@ -58,6 +69,7 @@ class _EditMerchandiseState extends State<EditMerchandise> {
       'description': descriptionController.text,
       'price': double.parse(priceController.text),
       'image_url': imageUrlController.text,
+      'quantity': int.parse(quantityController.text), // Add quantity to request body
     });
 
     final response = await http.put(url, headers: headers, body: body);
@@ -65,10 +77,12 @@ class _EditMerchandiseState extends State<EditMerchandise> {
     if (response.statusCode == 200) {
       widget.onEdit(); // Call the callback to refetch data
       Navigator.pop(context, {
+        'id': widget.id, // Ensure id is included in the result
         'name': nameController.text,
         'description': descriptionController.text,
         'price': priceController.text,
         'imageUrl': imageUrlController.text,
+        'quantity': quantityController.text, // Add quantity to result
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -163,6 +177,35 @@ class _EditMerchandiseState extends State<EditMerchandise> {
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16.0, vertical: 12.0),
                   ),
+                ),
+                const SizedBox(height: 16.0),
+                TextFormField(
+                  controller: quantityController,
+                  decoration: InputDecoration(
+                    labelText: 'Quantity',
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 12.0),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a quantity';
+                    }
+                    final quantity = int.tryParse(value);
+                    if (quantity == null) {
+                      return 'Please enter a valid number';
+                    }
+                    if (quantity < 1) {
+                      return 'Quantity must be at least 1';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 24.0),
                 ElevatedButton(

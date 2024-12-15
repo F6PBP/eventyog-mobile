@@ -16,6 +16,9 @@ class MerchandiseList extends StatefulWidget {
 
 class _MerchandiseListState extends State<MerchandiseList> {
   List<dynamic> merchandise = [];
+  bool isAdmin = false;
+  bool isLoading = true; // Add loading state
+  String errorMessage = ''; // Add error message state
 
   @override
   void initState() {
@@ -27,17 +30,21 @@ class _MerchandiseListState extends State<MerchandiseList> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.get("http://127.0.0.1:8000/api/merchandise/show/7e74fdc9-c388-4d16-ae1b-58eac2b1438e/");
+      
       if (response['status'] == 'success') {
-        print(response['data']);
         setState(() {
           merchandise = response['data'];
+          isAdmin = response['is_admin'] ?? false; // Ensure isAdmin is set to false if not provided
+          isLoading = false;
         });
       } else {
         throw Exception('Failed to load merchandise');
       }
     } catch (e) {
-      // Handle error appropriately
-      print('Error fetching merchandise: $e');
+      setState(() {
+        errorMessage = 'Error fetching merchandise: $e';
+        isLoading = false;
+      });
     }
   }
 
@@ -77,7 +84,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
   }
 
   void _navigateToEditMerchandise(dynamic merchandise) async {
-    await Navigator.push(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EditMerchandise(
@@ -87,9 +94,19 @@ class _MerchandiseListState extends State<MerchandiseList> {
           imageUrl: merchandise['image_url'],
           id: merchandise['pk'],
           onEdit: fetchMerchandise,
+          quantity: merchandise['quantity'].toString(), // Pass quantity parameter
         ),
       ),
     );
+
+    if (result != null) {
+      setState(() {
+        final index = this.merchandise.indexWhere((item) => item['pk'] == result['id']);
+        if (index != -1) {
+          this.merchandise[index] = result;
+        }
+      });
+    }
   }
 
   @override
@@ -98,53 +115,60 @@ class _MerchandiseListState extends State<MerchandiseList> {
       appBar: AppBar(
         title: Text('Merchandise List'),
       ),
-      body: ListView.builder(
-        itemCount: merchandise.length,
-        itemBuilder: (context, index) {
-          return MerchandiseCard(
-            imageUrl: merchandise[index]['image_url'] ?? '',
-            quantity: merchandise[index]['quantity'] ?? 0,
-            name: merchandise[index]['name'] ?? 'Unknown',
-            description: merchandise[index]['description'] ?? 'No description',
-            price: merchandise[index]['price']?.toString() ?? '0.0',
-            isAdmin: false,
-            onTap: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => MerchandiseDetail(
-                    id: merchandise[index]['pk'],
-                    imageUrl: merchandise[index]['image_url'] ?? '',
-                    name: merchandise[index]['name'] ?? 'Unknown',
-                    description: merchandise[index]['description'] ?? 'No description',
-                    price: merchandise[index]['price']?.toString() ?? '0.0',
-                    isAdmin: true,
-                    onEdit: fetchMerchandise, // Pass callback
-                  ),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                    const begin = Offset(1.0, 0.0);
-                    const end = Offset.zero;
-                    const curve = Curves.ease;
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : errorMessage.isNotEmpty
+              ? Center(child: Text(errorMessage))
+              : ListView.builder(
+                  itemCount: merchandise.length,
+                  itemBuilder: (context, index) {
+                    return MerchandiseCard(
+                      imageUrl: merchandise[index]['image_url'] ?? '',
+                      quantity: merchandise[index]['quantity'] ?? 0,
+                      name: merchandise[index]['name'] ?? 'Unknown',
+                      description: merchandise[index]['description'] ?? 'No description',
+                      price: merchandise[index]['price']?.toString() ?? '0.0',
+                      isAdmin: isAdmin,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => MerchandiseDetail(
+                              id: merchandise[index]['pk'],
+                              imageUrl: merchandise[index]['image_url'] ?? '',
+                              name: merchandise[index]['name'] ?? 'Unknown',
+                              description: merchandise[index]['description'] ?? 'No description',
+                              price: merchandise[index]['price']?.toString() ?? '0.0',
+                              isAdmin: isAdmin,
+                              onEdit: fetchMerchandise, // Pass callback
+                              quantity: merchandise[index]['quantity']?.toString() ?? '0', // Pass quantity parameter
+                            ),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.ease;
 
-                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-                    return SlideTransition(
-                      position: animation.drive(tween),
-                      child: child,
+                              return SlideTransition(
+                                position: animation.drive(tween),
+                                child: child,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      onDelete: isAdmin ? () => deleteMerchandise(merchandise[index]['pk']) : null,
                     );
                   },
                 ),
-              );
-            },
-            onDelete: () => deleteMerchandise(merchandise[index]['pk']),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToCreateMerchandise,
-        child: Icon(Icons.add),
-        tooltip: 'Create Merchandise',
-      ),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton(
+              onPressed: _navigateToCreateMerchandise,
+              child: Icon(Icons.add),
+              tooltip: 'Create Merchandise',
+            )
+          : null,
     );
   }
 }

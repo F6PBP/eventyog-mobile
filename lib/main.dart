@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
             ),
             useMaterial3: true,
           ),
-          home: MerchandiseList(),
+          home: const LoginPage(),
         ));
   }
 }
