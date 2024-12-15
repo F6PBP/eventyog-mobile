@@ -52,14 +52,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Future<ProfileModel> fetchUserProfile(CookieRequest request) async {
     final response =
-        await request.get("http://10.0.2.2:8000/api/auth/profile/");
+        await request.get("http://127.0.0.1:8000/api/auth/profile/");
     return ProfileModel.fromJson(response);
   }
 
   Future<void> updateUserProfile(CookieRequest request) async {
     if (_formKey.currentState!.validate()) {
       final response = await request.post(
-        "http://10.0.2.2:8000/api/auth/profile/edit/",
+        "http://127.0.0.1:8000//api/auth/profile/edit/",
         {
           'username': _usernameController.text,
           'name': _nameController.text,

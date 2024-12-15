@@ -1,73 +1,108 @@
-import 'package:eventyog_mobile/pages/events/event_detail.dart';
 import 'package:flutter/material.dart';
-import 'event_card.dart'; // Mengimpor EventCard
+import 'package:eventyog_mobile/pages/events/event_card.dart';
+import 'package:eventyog_mobile/pages/events/event_form.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class Event {
-  final String name;
-  final String description;
-  final String date;
-  final String imageUrl;
-  final String location;
-  final List<String> speakers;
+class EventListPage extends StatefulWidget {
+  final bool isAdmin;
 
-  Event({
-    required this.name,
-    required this.description,
-    required this.date,
-    required this.imageUrl,
-    required this.location,
-    required this.speakers,
-  });
+  EventListPage({required this.isAdmin});
+
+  @override
+  _EventListPageState createState() => _EventListPageState();
 }
 
-class EventList extends StatelessWidget {
-  final List<Event> events = [
-    Event(
-      name: "Music Festival",
-      description: "Experience live music like never before.",
-      date: "10 December 2024",
-      imageUrl: "https://example.com/music-festival.jpg",
-      location: "Central Park",
-      speakers: ["John Doe", "Jane Smith"],
-    ),
-    Event(
-      name: "Art Exhibition",
-      description: "Explore stunning artworks from renowned artists.",
-      date: "15 December 2024",
-      imageUrl: "https://example.com/art-exhibition.jpg",
-      location: "Art Gallery",
-      speakers: ["Alice Brown", "Bob White"],
-    ),
-    Event(
-      name: "Tech Conference",
-      description: "Join us for an insightful tech discussion.",
-      date: "20 December 2024",
-      imageUrl: "https://example.com/tech-conference.jpg",
-      location: "Tech Hub",
-      speakers: ["David Lee", "Chris Green"],
-    ),
-  ];
+class _EventListPageState extends State<EventListPage> {
+  List<Map<String, dynamic>> events = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchEvents();
+  }
+
+  Future<void> fetchEvents() async {
+    final response =
+        await http.get(Uri.parse('http://your-django-api-url/events/'));
+
+    if (response.statusCode == 200) {
+      List jsonResponse = json.decode(response.body);
+      setState(() {
+        events =
+            jsonResponse.map((event) => event as Map<String, dynamic>).toList();
+      });
+    } else {
+      print("a");
+      throw Exception('Failed to load events');
+    }
+  }
+
+  void _addEvent(Map<String, dynamic> newEvent) {
+    setState(() {
+      events.add(newEvent);
+    });
+  }
+
+  void _editEvent(int index, Map<String, dynamic> updatedEvent) {
+    setState(() {
+      events[index] = updatedEvent;
+    });
+  }
+
+  void _deleteEvent(int index) {
+    setState(() {
+      events.removeAt(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Event List"),
+        title: Text('Event List'),
+        actions: widget.isAdmin
+            ? [
+                IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () async {
+                    final newEvent = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EventFormPage()),
+                    );
+                    if (newEvent != null) {
+                      _addEvent(newEvent);
+                    }
+                  },
+                ),
+              ]
+            : null,
       ),
       body: ListView.builder(
         itemCount: events.length,
         itemBuilder: (context, index) {
           final event = events[index];
           return EventCard(
-            event: event,
-            onTap: () {
-              // Navigasi ke EventDetail ketika card ditekan
-              Navigator.push(
+            title: event['title'],
+            description: event['description'],
+            imageUrl: event['imageUrl'],
+            startTime: event['startTime'],
+            endTime: event['endTime'],
+            location: event['location'],
+            isAdmin: widget.isAdmin,
+            onEdit: () async {
+              final updatedEvent = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EventDetail(event: event),
+                  builder: (context) => EventFormPage(event: event),
                 ),
               );
+              if (updatedEvent != null) {
+                _editEvent(index, updatedEvent);
+              }
+            },
+            onDelete: () {
+              _deleteEvent(index);
             },
           );
         },

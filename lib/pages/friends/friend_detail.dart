@@ -1,8 +1,6 @@
 import 'dart:convert';
-
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -31,7 +29,7 @@ class FriendDetailPage extends StatelessWidget {
     Future<void> addFriend(CookieRequest request) async {
       try {
         final response = await request.postJson(
-          "http://10.0.2.2:8000/api/friend/add/$id",
+          "http://127.0.0.1:8000/api/friend/add/$id",
           jsonEncode(<String, String>{}),
         );
 
@@ -63,7 +61,7 @@ class FriendDetailPage extends StatelessWidget {
     Future<void> removeFriend(CookieRequest request) async {
       try {
         final response = await request.postJson(
-          "http://10.0.2.2:8000/api/friend/remove/$id",
+          "http://127.0.0.1:8000/api/friend/remove/$id",
           jsonEncode(<String, String>{}),
         );
 
@@ -142,8 +140,6 @@ class FriendDetailPage extends StatelessWidget {
                     icon: Icon(Icons.person_remove),
                     label: Text("Remove Friend"),
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.redAccent,
-                      onPrimary: Colors.white,
                       padding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       textStyle: TextStyle(fontSize: 16),
@@ -156,8 +152,6 @@ class FriendDetailPage extends StatelessWidget {
                     icon: Icon(Icons.person_add),
                     label: Text("Add Friend"),
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.blueAccent,
-                      onPrimary: Colors.white,
                       padding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       textStyle: TextStyle(fontSize: 16),

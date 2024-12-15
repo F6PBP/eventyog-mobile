@@ -1,73 +1,67 @@
-import 'package:eventyog_mobile/pages/events/event_list.dart';
 import 'package:flutter/material.dart';
+import 'event_detail.dart';
 
 class EventCard extends StatelessWidget {
-  final Event event;
-  final VoidCallback onTap; // Callback saat card ditekan
+  final String title;
+  final String description;
+  final String imageUrl;
+  final String startTime;
+  final String endTime;
+  final String location;
+  final bool isAdmin;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
-  const EventCard({Key? key, required this.event, required this.onTap})
-      : super(key: key);
+  EventCard({
+    required this.title,
+    required this.description,
+    required this.imageUrl,
+    required this.startTime,
+    required this.endTime,
+    required this.location,
+    required this.isAdmin,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap, // Menangani tap pada card
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Gambar acara
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  event.imageUrl,
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
-                ),
+    return Card(
+      child: ListTile(
+        leading:
+            Image.network(imageUrl, width: 50, height: 50, fit: BoxFit.cover),
+        title: Text(title),
+        subtitle: Text(description),
+        trailing: isAdmin
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: onEdit,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: onDelete,
+                  ),
+                ],
+              )
+            : null,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EventDetailPage(
+                title: title,
+                description: description,
+                startTime: startTime,
+                endTime: endTime,
+                imageUrl: imageUrl,
+                location: location,
               ),
-              const SizedBox(width: 10),
-              // Detail acara
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      event.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      event.date,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      event.description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
