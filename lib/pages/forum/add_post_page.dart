@@ -22,9 +22,7 @@ class _AddPostPageState extends State<AddPostPage> {
     });
 
     try {
-      // Ambil request dari provider
       final request = context.read<CookieRequest>();
-      // Ambil username yang sudah disimpan saat login
       final String? username = request.jsonData['username'];
 
       if (username == null || username.isEmpty) {
@@ -32,22 +30,20 @@ class _AddPostPageState extends State<AddPostPage> {
       }
 
       final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/api/yogforum/add-post/'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'username': username,
-        'title': _titleController.text,
-        'content': _contentController.text,
-      }),
-    );
+        Uri.parse('http://10.0.2.2:8000/api/yogforum/add-post/'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'username': username,
+          'title': _titleController.text,
+          'content': _contentController.text,
+        }),
+      );
 
       if (response.statusCode == 201) {
-        // Jika berhasil, kembali ke halaman sebelumnya atau tampilkan pesan sukses
         Navigator.pop(context);
       } else {
-        // Jika gagal, tampilkan error dari response
         final responseData = jsonDecode(response.body);
         final message = responseData['message'] ?? 'Failed to add post';
         throw Exception(message);
@@ -66,38 +62,82 @@ class _AddPostPageState extends State<AddPostPage> {
   @override
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
-    // Cek username (opsional, untuk debugging)
-    // print("Logged in as: ${request.jsonData['username']}");
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Post'),
+        title: const Text('Add Post', style: TextStyle(color: Colors.white)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Create a New Forum Post',
+                style: TextStyle(
+                  fontSize: 28.0,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: _contentController,
-              decoration: const InputDecoration(
-                labelText: 'Content',
+              const SizedBox(height: 8.0),
+              const Text(
+                'Share your thoughts with the community',
+                style: TextStyle(fontSize: 16.0, color: Colors.grey),
               ),
-            ),
-            const SizedBox(height: 24.0),
-            ElevatedButton(
-              onPressed: isLoading ? null : addPost,
-              child: isLoading 
-                  ? const CircularProgressIndicator() 
-                  : const Text('Submit'),
-            ),
-          ],
+              const SizedBox(height: 32.0),
+              TextField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  labelText: 'Title',
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 12.0),
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              TextField(
+                controller: _contentController,
+                maxLines: 5,
+                decoration: InputDecoration(
+                  labelText: 'Content',
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 12.0),
+                ),
+              ),
+              const SizedBox(height: 24.0),
+              ElevatedButton(
+                onPressed: isLoading ? null : addPost,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                ),
+                child: isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'Submit',
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:eventyog_mobile/pages/friends/friend_list.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -35,7 +36,12 @@ class FriendDetailPage extends StatelessWidget {
           jsonEncode(<String, String>{}),
         );
 
-        if (response['status'] == 'success') {
+        print(response);
+
+        if (response['status'] == true) {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => FriendListPage()));
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Friend added successfully!'),
@@ -67,13 +73,18 @@ class FriendDetailPage extends StatelessWidget {
           jsonEncode(<String, String>{}),
         );
 
-        if (response['status'] == 'success') {
+        if (response['status'] == true) {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => FriendListPage()));
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Friend removed successfully!'),
               backgroundColor: Colors.green,
             ),
           );
+
+          // Replace page with the previous page
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

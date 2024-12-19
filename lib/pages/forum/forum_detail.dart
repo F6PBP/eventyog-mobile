@@ -34,7 +34,8 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
   Future<void> fetchPostDetail() async {
     if (username == null || username!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Username not found. Make sure you are logged in.')),
+        const SnackBar(
+            content: Text('Username not found. Make sure you are logged in.')),
       );
       setState(() {
         isLoading = false;
@@ -44,7 +45,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/post/${widget.postId}/'),
+        Uri.parse('http://10.0.2.2:8000/api/yogforum/post/${widget.postId}/'),
       );
 
       if (response.statusCode == 200) {
@@ -76,7 +77,8 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/like_post/${widget.postId}/'),
+        Uri.parse(
+            'http://10.0.2.2:8000/api/yogforum/like_post/${widget.postId}/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -106,7 +108,8 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/dislike_post/${widget.postId}/'),
+        Uri.parse(
+            'http://10.0.2.2:8000/api/yogforum/dislike_post/${widget.postId}/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -136,7 +139,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/like_reply/$replyId/'),
+        Uri.parse('http://10.0.2.2:8000/api/yogforum/like_reply/$replyId/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -162,7 +165,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/dislike_reply/$replyId/'),
+        Uri.parse('http://10.0.2.2:8000/api/yogforum/dislike_reply/$replyId/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -188,7 +191,8 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/edit/${forumPost!['id']}/'),
+        Uri.parse(
+            'http://10.0.2.2:8000/api/yogforum/edit/${forumPost!['id']}/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
@@ -220,23 +224,23 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
   Future<void> postReply(String content, [int? replyTo]) async {
     if (username == null || username!.isEmpty) return;
     try {
-          final body = <String, dynamic>{
-      'content': content,
-      'username': username,
-    };
-    if (replyTo != null) {
-      body['reply_to'] = replyTo;
-    }
-
+      final body = <String, dynamic>{
+        'content': content,
+        'username': username,
+      };
+      if (replyTo != null) {
+        body['reply_to'] = replyTo;
+      }
 
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/post/${forumPost!['id']}/add_reply/'),
+        Uri.parse(
+            'http://10.0.2.2:8000/api/yogforum/post/${forumPost!['id']}/add_reply/'),
         body: jsonEncode(body),
         headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200 && jsonDecode(response.body)['success']) {
-        fetchPostDetail(); 
+        fetchPostDetail();
       } else {
         throw Exception('Failed to post reply');
       }
@@ -251,7 +255,8 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/post/${forumPost!['id']}/delete/'),
+        Uri.parse(
+            'http://10.0.2.2:8000/api/yogforum/post/${forumPost!['id']}/delete/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -262,7 +267,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Post deleted successfully!')),
           );
-          Navigator.pop(context); 
+          Navigator.pop(context);
         } else {
           throw Exception('Failed to delete post: ${data['message']}');
         }
@@ -280,7 +285,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/reply/$replyId/delete/'),
+        Uri.parse('http://10.0.2.2:8000/api/yogforum/reply/$replyId/delete/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -339,9 +344,11 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                     children: [
                       Text(
                         '– ${reply['user']}',
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
-                      if (reply['replies'] != null && reply['replies'].isNotEmpty)
+                      if (reply['replies'] != null &&
+                          reply['replies'].isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: buildReplies(
@@ -354,13 +361,15 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.open_in_new, color: Colors.green),
+                        icon:
+                            const Icon(Icons.open_in_new, color: Colors.green),
                         tooltip: 'View this Reply as a Post',
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ReplyDetailPage(replyId: reply['id']),
+                              builder: (context) =>
+                                  ReplyDetailPage(replyId: reply['id']),
                             ),
                           );
                         },
@@ -394,7 +403,8 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                               builder: (ctx) {
                                 return AlertDialog(
                                   title: const Text('Delete Reply'),
-                                  content: const Text('Are you sure you want to delete this reply?'),
+                                  content: const Text(
+                                      'Are you sure you want to delete this reply?'),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.pop(ctx),
@@ -459,7 +469,8 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
 
   void showEditDialog() {
     final titleController = TextEditingController(text: forumPost!['title']);
-    final contentController = TextEditingController(text: forumPost!['content']);
+    final contentController =
+        TextEditingController(text: forumPost!['content']);
 
     showDialog(
       context: context,
@@ -486,11 +497,18 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 editPost(titleController.text, contentController.text);
                 Navigator.pop(context);
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               child: const Text('Save'),
             ),
           ],
@@ -526,7 +544,8 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isAuthor = forumPost != null && username != null && forumPost!['user'] == username;
+    final isAuthor =
+        forumPost != null && username != null && forumPost!['user'] == username;
 
     return Scaffold(
       appBar: AppBar(
@@ -546,110 +565,117 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextButton.icon(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_left, color: Colors.grey),
-                        label: const Text('Back', style: TextStyle(color: Colors.grey)),
-                      ),
-                      const SizedBox(height: 10),
                       Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      // Ganti menjadi Card
-                      child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      forumPost!['title'],
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        // Ganti menjadi Card
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        forumPost!['title'],
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (isAuthor)
+                                          IconButton(
+                                            icon: const Icon(Icons.edit,
+                                                color: Colors.grey),
+                                            onPressed: () {
+                                              showEditDialog();
+                                            },
+                                          ),
+                                        if (isAuthor)
+                                          IconButton(
+                                            icon: const Icon(Icons.delete,
+                                                color: Colors.red),
+                                            onPressed: () {
+                                              showDeleteDialog();
+                                            },
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'by ${forumPost!['user']}',
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.grey),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  forumPost!['content'],
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.thumb_up,
+                                          color: Colors.blue),
+                                      onPressed: () {
+                                        toggleLikePost();
+                                      },
+                                    ),
+                                    Text('${forumPost!['total_likes']}'),
+                                    IconButton(
+                                      icon: const Icon(Icons.thumb_down,
+                                          color: Colors.red),
+                                      onPressed: () {
+                                        toggleDislikePost();
+                                      },
+                                    ),
+                                    Text('${forumPost!['total_dislikes']}'),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  forumPost!['created_at'],
+                                  style: const TextStyle(
+                                      fontSize: 12, color: Colors.grey),
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    showReplyDialog(null);
+                                  },
+                                  icon: const Icon(Icons.reply, size: 20),
+                                  label: const Text('Reply to this Post'),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 30, vertical: 15),
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (isAuthor)
-                                        IconButton(
-                                          icon: const Icon(Icons.edit, color: Colors.grey),
-                                          onPressed: () {
-                                            showEditDialog();
-                                          },
-                                        ),
-                                      if (isAuthor)
-                                        IconButton(
-                                          icon: const Icon(Icons.delete, color: Colors.red),
-                                          onPressed: () {
-                                            showDeleteDialog();
-                                          },
-                                        ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'by ${forumPost!['user']}',
-                                style: const TextStyle(fontSize: 14, color: Colors.grey),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                forumPost!['content'],
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.thumb_up, color: Colors.blue),
-                                    onPressed: () {
-                                      toggleLikePost();
-                                    },
-                                  ),
-                                  Text('${forumPost!['total_likes']}'),
-                                  IconButton(
-                                    icon: const Icon(Icons.thumb_down, color: Colors.red),
-                                    onPressed: () {
-                                      toggleDislikePost();
-                                    },
-                                  ),
-                                  Text('${forumPost!['total_dislikes']}'),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                forumPost!['created_at'],
-                                style: const TextStyle(fontSize: 12, color: Colors.grey),
-                              ),
-                              const SizedBox(height: 16),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  showReplyDialog(null);
-                                },
-                                icon: const Icon(Icons.reply),
-                                label: const Text('Reply to this Post'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  foregroundColor: Colors.white,
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
                       const SizedBox(height: 24),
                       const Text(
                         'Replies',

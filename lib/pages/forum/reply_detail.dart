@@ -33,7 +33,8 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
   Future<void> fetchReplyDetail() async {
     if (username == null || username!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Username not found. Make sure you are logged in.')),
+        const SnackBar(
+            content: Text('Username not found. Make sure you are logged in.')),
       );
       setState(() {
         isLoading = false;
@@ -43,7 +44,7 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/reply/${widget.replyId}/'),
+        Uri.parse('http://10.0.2.2:8000/api/yogforum/reply/${widget.replyId}/'),
       );
 
       if (response.statusCode == 200) {
@@ -74,7 +75,7 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/like_reply/$replyId/'),
+        Uri.parse('http://10.0.2.2:8000/api/yogforum/like_reply/$replyId/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -100,7 +101,7 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/dislike_reply/$replyId/'),
+        Uri.parse('http://10.0.2.2:8000/api/yogforum/dislike_reply/$replyId/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -137,7 +138,7 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
       final forumId = replyData!['forum_id'];
 
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/post/$forumId/add_reply/'),
+        Uri.parse('http://10.0.2.2:8000/api/yogforum/post/$forumId/add_reply/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
       );
@@ -158,7 +159,7 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/yogforum/reply/$replyId/delete/'),
+        Uri.parse('http://10.0.2.2:8000/api/yogforum/reply/$replyId/delete/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -189,7 +190,8 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(replyToId == null ? 'Reply to this Reply' : 'Reply to Comment'),
+          title: Text(
+              replyToId == null ? 'Reply to this Reply' : 'Reply to Comment'),
           content: TextField(
             controller: replyController,
             maxLines: 3,
@@ -217,7 +219,8 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isAuthor = replyData != null && username != null && replyData!['user'] == username;
+    final isAuthor =
+        replyData != null && username != null && replyData!['user'] == username;
 
     return Scaffold(
       appBar: AppBar(
@@ -231,7 +234,8 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
                   padding: const EdgeInsets.all(16.0),
                   child: Card(
                     elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -243,12 +247,14 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
                           ),
                           const SizedBox(height: 8),
                           Text('by ${replyData!['user']}',
-                              style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                              style: const TextStyle(
+                                  fontSize: 14, color: Colors.grey)),
                           const SizedBox(height: 8),
                           Row(
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.thumb_up, color: Colors.blue, size: 20),
+                                icon: const Icon(Icons.thumb_up,
+                                    color: Colors.blue, size: 20),
                                 onPressed: () {
                                   likeReply(replyData!['id']);
                                 },
@@ -256,7 +262,8 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
                               Text('${replyData!['total_likes']}'),
                               const SizedBox(width: 16),
                               IconButton(
-                                icon: const Icon(Icons.thumb_down, color: Colors.red, size: 20),
+                                icon: const Icon(Icons.thumb_down,
+                                    color: Colors.red, size: 20),
                                 onPressed: () {
                                   dislikeReply(replyData!['id']);
                                 },
@@ -267,7 +274,8 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
                           const SizedBox(height: 8),
                           Text(
                             replyData!['created_at'],
-                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey),
                           ),
                           const SizedBox(height: 16),
                           // Tombol untuk membalas reply ini
@@ -286,12 +294,16 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
                           const Divider(height: 32),
                           const Text(
                             'Replies to this Reply:',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
-                          replyData!['replies'] == null || replyData!['replies'].isEmpty
+                          replyData!['replies'] == null ||
+                                  replyData!['replies'].isEmpty
                               ? const Text('No replies yet.')
-                              : buildNestedReplies(List<Map<String, dynamic>>.from(replyData!['replies'])),
+                              : buildNestedReplies(
+                                  List<Map<String, dynamic>>.from(
+                                      replyData!['replies'])),
                         ],
                       ),
                     ),
@@ -300,7 +312,8 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
     );
   }
 
-  Widget buildNestedReplies(List<Map<String, dynamic>> replies, {int depth = 0}) {
+  Widget buildNestedReplies(List<Map<String, dynamic>> replies,
+      {int depth = 0}) {
     return ListView.builder(
       itemCount: replies.length,
       shrinkWrap: true,
@@ -313,20 +326,25 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
           child: Card(
             margin: const EdgeInsets.symmetric(vertical: 4.0),
             color: depth % 2 == 0 ? Colors.grey[100] : Colors.grey[200],
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             child: ListTile(
               title: Padding(
                 padding: const EdgeInsets.only(bottom: 4.0),
-                child: Text(rep['content'], style: const TextStyle(fontSize: 16)),
+                child:
+                    Text(rep['content'], style: const TextStyle(fontSize: 16)),
               ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('– ${rep['user']}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text('– ${rep['user']}',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
                   if (rep['replies'] != null && rep['replies'].isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
-                      child: buildNestedReplies(List<Map<String, dynamic>>.from(rep['replies']), depth: depth + 1),
+                      child: buildNestedReplies(
+                          List<Map<String, dynamic>>.from(rep['replies']),
+                          depth: depth + 1),
                     ),
                 ],
               ),
@@ -340,7 +358,8 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ReplyDetailPage(replyId: rep['id']),
+                          builder: (context) =>
+                              ReplyDetailPage(replyId: rep['id']),
                         ),
                       );
                     },
@@ -374,7 +393,8 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
                           builder: (ctx) {
                             return AlertDialog(
                               title: const Text('Delete Reply'),
-                              content: const Text('Are you sure you want to delete this reply?'),
+                              content: const Text(
+                                  'Are you sure you want to delete this reply?'),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(ctx),
