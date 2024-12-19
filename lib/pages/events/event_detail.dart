@@ -56,7 +56,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
     if (dateTime == null) {
       return 'Not specified';
     }
-    return DateFormat('dd MMM yyyy, HH:mm').format(dateTime.toLocal());
+    return DateFormat('dd MMM yyyy, HH:mm').format(dateTime);
   }
 
   Widget _buildInfoRow(IconData icon, String text) {

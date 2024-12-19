@@ -54,7 +54,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       String biodata) async {
     try {
       // Prepare multipart request
-      final uri = Uri.parse("http://127.0.0.1:8000//api/auth/onboarding/");
+      final uri = Uri.parse("http://127.0.0.1:8000/api/auth/onboarding/");
       final multipartRequest = http.MultipartRequest('POST', uri)
         ..headers.addAll(await request.headers)
         ..fields['name'] = fullName

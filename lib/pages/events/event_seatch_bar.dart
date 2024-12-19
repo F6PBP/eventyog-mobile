@@ -114,7 +114,7 @@ class _EventSearchBarState extends State<EventSearchBar> {
               widget.onSearch(value);
             },
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           // Category Dropdown
           Container(
             width: double.infinity,
@@ -135,7 +135,7 @@ class _EventSearchBarState extends State<EventSearchBar> {
                   value: category['code'],
                   child: Text(
                     category['name']!,
-                    style: TextStyle(fontSize: 14),
+                    style: const TextStyle(fontSize: 14),
                   ),
                 );
               }).toList(),

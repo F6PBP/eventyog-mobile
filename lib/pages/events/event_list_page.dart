@@ -70,9 +70,6 @@ class _EventListPageState extends State<EventListPage> {
           final matchesSearch = searchQuery.isEmpty ||
               event.fields.title
                   .toLowerCase()
-                  .contains(searchQuery.toLowerCase()) ||
-              event.fields.description
-                  .toLowerCase()
                   .contains(searchQuery.toLowerCase());
 
           final matchesCategory = selectedCategory == 'ALL' ||

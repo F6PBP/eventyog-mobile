@@ -59,7 +59,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<void> updateUserProfile(CookieRequest request) async {
     if (_formKey.currentState!.validate()) {
       final response = await request.post(
-        "http://127.0.0.1:8000//api/auth/profile/edit/",
+        "http://127.0.0.1:8000/api/auth/profile/edit/",
         {
           'username': _usernameController.text,
           'name': _nameController.text,

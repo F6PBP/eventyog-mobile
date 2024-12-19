@@ -131,9 +131,8 @@ class _EditEventPageState extends State<EditEventPage> {
       _showErrorDialog('Event berakhir sebelum dimulai');
       return;
     }
-
-    final formattedStartTime = startTime?.toUtc().toIso8601String();
-    final formattedEndTime = endTime?.toUtc().toIso8601String();
+    final formattedStartTime = startTime?.toIso8601String();
+    final formattedEndTime = endTime?.toIso8601String();
 
     Map<String, dynamic> eventData = {
       'title': title,
