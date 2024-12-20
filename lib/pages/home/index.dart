@@ -1,4 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:eventyog_mobile/pages/cart/MyCart.dart';
 import 'package:eventyog_mobile/pages/home/widgets/event_card.dart';
 import 'package:eventyog_mobile/pages/home/widgets/upcoming_card.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
@@ -178,6 +179,23 @@ class HomePage extends StatelessWidget {
                       date: event['date']!,
                       time: event['time']!);
                 },
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Navigasi ke halaman MyCartPage
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MyCartPage()),
+                    );
+                  },
+                  child: const Text('Go to My Cart'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                    textStyle: const TextStyle(fontSize: 16),
+                  ),
+                ),
               ),
             ],
           ),
