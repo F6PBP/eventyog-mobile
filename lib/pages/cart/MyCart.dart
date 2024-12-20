@@ -26,7 +26,7 @@ class _MyCartPageState extends State<MyCartPage> {
   Future<void> fetchCartData(CookieRequest request) async {
     try {
       final response =
-          await request.get("http://localhost:8000/api/cart/get_cart_data/");
+          await request.get("http://10.0.2.2:8000/api/cart/get_cart_data/");
 
       if (response.containsKey('user_profile') &&
           response.containsKey('cart_events') &&
@@ -57,266 +57,275 @@ class _MyCartPageState extends State<MyCartPage> {
   }
 
   Future<void> checkout(CookieRequest request) async {
-  final cartData = {
-    "event": localCartEvents.map((event) => {
-          "name": event.ticketName,
-          "quantity": event.quantity,
-          "pricePerItem": event.price,
-        }).toList(),
-    "merch": localCartMerch.map((merch) => {
-          "name": merch.name,
-          "quantity": merch.quantity,
-          "pricePerItem": merch.price,
-        }).toList(),
-  };
+    final cartData = {
+      "event": localCartEvents
+          .map((event) => {
+                "name": event.ticketName,
+                "quantity": event.quantity,
+                "pricePerItem": event.price,
+              })
+          .toList(),
+      "merch": localCartMerch
+          .map((merch) => {
+                "name": merch.name,
+                "quantity": merch.quantity,
+                "pricePerItem": merch.price,
+              })
+          .toList(),
+    };
 
-  double totalPrice = _calculateTotalPrice();
+    double totalPrice = _calculateTotalPrice();
 
-  if ((userProfile?.walletBalance ?? 0.0) < totalPrice) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text('Insufficient balance. Please top up your wallet.')),
-    );
-    return;
-  }
+    if ((userProfile?.walletBalance ?? 0.0) < totalPrice) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Insufficient balance. Please top up your wallet.')),
+      );
+      return;
+    }
 
-  if (localCartEvents.isEmpty && localCartMerch.isEmpty) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Your cart is empty!')),
-  );
-  return;
-}
+    if (localCartEvents.isEmpty && localCartMerch.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Your cart is empty!')),
+      );
+      return;
+    }
 
-  try {
-    final response = await request.post(
-      "http://localhost:8000/api/cart/checkout/",
-      jsonEncode(cartData),
-    );
-    final newBalance = double.parse(response['new_wallet_balance']);
-    if (response['status'] == true) {
-  // Respons berhasil
-      setState(() {
+    try {
+      final response = await request.post(
+        "http://10.0.2.2:8000/api/cart/checkout/",
+        jsonEncode(cartData),
+      );
+      final newBalance = double.parse(response['new_wallet_balance']);
+      if (response['status'] == true) {
+        // Respons berhasil
+        setState(() {
           userProfile?.walletBalance = newBalance;
           localCartEvents.clear();
           localCartMerch.clear();
         });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Checkout successful!')),
-    );
-  } else {
-    throw Exception(response['error']);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Checkout successful!')),
+        );
+      } else {
+        throw Exception(response['error']);
+      }
+    } catch (e) {
+      print('Error during checkout: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('transaction success')),
+      );
+    }
   }
-  } catch (e) {
-    print('Error during checkout: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('transaction success')),
-    );
-    
-  }
-
-}
 
 // Fungsi untuk mengosongkan keranjang di server
-Future<void> emptyCart(CookieRequest request) async {
-  try {
-    final response = await request.post(
-      "http://localhost:8000/api/cart/empty_cart/",
-      {},
-    );
+  Future<void> emptyCart(CookieRequest request) async {
+    try {
+      final response = await request.post(
+        "http://10.0.2.2:8000/api/cart/empty_cart/",
+        {},
+      );
 
-    if (response['status'] != true) {
-      throw Exception('Failed to empty cart');
+      if (response['status'] != true) {
+        throw Exception('Failed to empty cart');
+      }
+    } catch (e) {
+      print('Error emptying cart: $e');
     }
-  } catch (e) {
-    print('Error emptying cart: $e');
   }
-}
 
-
-Widget _cartItem(dynamic item, {required bool isEvent}) {
-  return Card(
-    margin: const EdgeInsets.symmetric(vertical: 8),
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          Image.network(item.imageUrl,
-              width: 100, height: 100, fit: BoxFit.cover),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isEvent ? item.ticketName : item.name,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                Text('Price: Rp${item.price.toStringAsFixed(2)}'),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.remove),
-                      onPressed: () {
-                        setState(() {
-                          if (item.quantity > 0) { // Kuantitas minimum 0
-                            item.quantity -= 1;
-                          }
-                        });
-                      },
-                    ),
-                    Text('${item.quantity}'),
-                    IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: () {
-                        setState(() {
-                          item.quantity += 1;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Text('Rp${(item.quantity * item.price).toStringAsFixed(2)}'),
-        ],
-      ),
-    ),
-  );
-}
-
-@override
-Widget build(BuildContext context) {
-  double totalPrice = _calculateTotalPrice(); // Hitung total harga
-  double walletBalance = userProfile?.walletBalance ?? 0.0;
-  double remainingBalance = walletBalance - totalPrice; // Sisa uang
-
-  return Scaffold(
-    appBar: AppBar(title: const Text("My Cart")),
-    body: FutureBuilder<void>(
-      future: _fetchCartFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else {
-          return Column(
-            children: [
-              Expanded(
-                child: ListView(
-                  children: [
-                    // Menampilkan item Event
-                    if (localCartEvents.isNotEmpty)
-                      ...localCartEvents
-                          .map<Widget>((event) => _cartItem(event, isEvent: true))
-                          .toList(),
-
-                    // Menampilkan item Merchandise
-                    if (localCartMerch.isNotEmpty)
-                      ...localCartMerch
-                          .map<Widget>((merch) => _cartItem(merch, isEvent: false))
-                          .toList(),
-                  ],
-                ),
-              ),
-
-              // Total Price, Wallet Balance, dan Sisa Uang di Bawah
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                color: Colors.grey[200],
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Wallet Balance: Rp${walletBalance.toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Total Price: Rp${totalPrice.toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 16, color: Colors.blue),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Remaining Balance: Rp${remainingBalance.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: remainingBalance < 0 ? Colors.red : Colors.green,
+  Widget _cartItem(dynamic item, {required bool isEvent}) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Image.network(item.imageUrl,
+                width: 100, height: 100, fit: BoxFit.cover),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isEvent ? item.ticketName : item.name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  Text('Price: Rp${item.price.toStringAsFixed(2)}'),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.remove),
+                        onPressed: () {
+                          setState(() {
+                            if (item.quantity > 0) {
+                              // Kuantitas minimum 0
+                              item.quantity -= 1;
+                            }
+                          });
+                        },
                       ),
-                    ),
-                  ],
-                ),
+                      Text('${item.quantity}'),
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: () {
+                          setState(() {
+                            item.quantity += 1;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
+            ),
+            Text('Rp${(item.quantity * item.price).toStringAsFixed(2)}'),
+          ],
+        ),
+      ),
+    );
+  }
 
-              // Tombol Checkout di Bawah
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  onPressed: () {
+  @override
+  Widget build(BuildContext context) {
+    double totalPrice = _calculateTotalPrice(); // Hitung total harga
+    double walletBalance = userProfile?.walletBalance ?? 0.0;
+    double remainingBalance = walletBalance - totalPrice; // Sisa uang
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("My Cart")),
+      body: FutureBuilder<void>(
+        future: _fetchCartFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    children: [
+                      // Menampilkan item Event
+                      if (localCartEvents.isNotEmpty)
+                        ...localCartEvents
+                            .map<Widget>(
+                                (event) => _cartItem(event, isEvent: true))
+                            .toList(),
+
+                      // Menampilkan item Merchandise
+                      if (localCartMerch.isNotEmpty)
+                        ...localCartMerch
+                            .map<Widget>(
+                                (merch) => _cartItem(merch, isEvent: false))
+                            .toList(),
+                    ],
+                  ),
+                ),
+
+                // Total Price, Wallet Balance, dan Sisa Uang di Bawah
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  color: Colors.grey[200],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Wallet Balance: Rp${walletBalance.toStringAsFixed(2)}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Total Price: Rp${totalPrice.toStringAsFixed(2)}',
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.blue),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Remaining Balance: Rp${remainingBalance.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color:
+                              remainingBalance < 0 ? Colors.red : Colors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Tombol Checkout di Bawah
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final request = context.read<CookieRequest>();
+                      checkout(request);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    child: const Text(
+                      "Checkout",
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
                     final request = context.read<CookieRequest>();
-                    checkout(request);
+                    await emptyCart(request); // Panggil fungsi emptyCart
+
+                    setState(() {
+                      localCartEvents
+                          .clear(); // Kosongkan state lokal untuk event
+                      localCartMerch
+                          .clear(); // Kosongkan state lokal untuk merchandise
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Cart has been emptied successfully')),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 50),
+                    backgroundColor: Colors.red, // Warna merah untuk tombol
                   ),
                   child: const Text(
-                    "Checkout",
-                    style: TextStyle(fontSize: 18),
+                    "Empty Cart",
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
-              ),
-              ElevatedButton(
-        onPressed: () async {
-          final request = context.read<CookieRequest>();
-          await emptyCart(request); // Panggil fungsi emptyCart
-
-          setState(() {
-            localCartEvents.clear(); // Kosongkan state lokal untuk event
-            localCartMerch.clear();  // Kosongkan state lokal untuk merchandise
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cart has been emptied successfully')),
-          );
+              ],
+            );
+          }
         },
-        style: ElevatedButton.styleFrom(
-          minimumSize: const Size(double.infinity, 50),
-          backgroundColor: Colors.red, // Warna merah untuk tombol
-        ),
-        child: const Text(
-          "Empty Cart",
-          style: TextStyle(fontSize: 18, color: Colors.white),
-        ),
       ),
-            ],
-          );
-        }
-      },
-    ),
-  );
-}
+    );
+  }
 
 // Fungsi untuk menghitung total harga semua item di keranjang
-double _calculateTotalPrice() {
-  double total = 0.0;
+  double _calculateTotalPrice() {
+    double total = 0.0;
 
-  for (var event in localCartEvents) {
-    total += event.price * event.quantity;
+    for (var event in localCartEvents) {
+      total += event.price * event.quantity;
+    }
+
+    for (var merch in localCartMerch) {
+      total += merch.price * merch.quantity;
+    }
+
+    return total;
   }
-
-  for (var merch in localCartMerch) {
-    total += merch.price * merch.quantity;
-  }
-
-  return total;
-}
 }
 
 class ApiService {
-  final String baseUrl = 'http://localhost:8000/api/cart';
+  final String baseUrl = 'http://10.0.2.2:8000/api/cart';
 
   Future<Map<String, dynamic>> fetchCartData() async {
     try {
