@@ -39,7 +39,7 @@ class Data {
   String email;
   DateTime dateJoined;
   String bio;
-  String imageUrl;
+  String? imageUrl;
   String? categories;
 
   Data({
@@ -48,7 +48,7 @@ class Data {
     required this.email,
     required this.dateJoined,
     required this.bio,
-    required this.imageUrl,
+    this.imageUrl,
     this.categories,
   });
 
