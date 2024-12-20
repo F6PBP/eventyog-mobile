@@ -32,7 +32,7 @@ class FriendDetailPage extends StatelessWidget {
     Future<void> addFriend(CookieRequest request) async {
       try {
         final response = await request.postJson(
-          "http://10.0.2.2:8000/api/friend/add/$id",
+          "http://127.0.0.1:8000/api/friend/add/$id",
           jsonEncode(<String, String>{}),
         );
 
@@ -69,7 +69,7 @@ class FriendDetailPage extends StatelessWidget {
     Future<void> removeFriend(CookieRequest request) async {
       try {
         final response = await request.postJson(
-          "http://10.0.2.2:8000/api/friend/remove/$id",
+          "http://127.0.0.1:8000/api/friend/remove/$id",
           jsonEncode(<String, String>{}),
         );
 

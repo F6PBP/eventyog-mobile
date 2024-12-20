@@ -44,7 +44,8 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/reply/${widget.replyId}/'),
+        Uri.parse(
+            'http://127.0.0.1:8000/api/yogforum/reply/${widget.replyId}/'),
       );
 
       if (response.statusCode == 200) {
@@ -75,7 +76,7 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/like_reply/$replyId/'),
+        Uri.parse('http://127.0.0.1:8000/api/yogforum/like_reply/$replyId/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -101,7 +102,7 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/dislike_reply/$replyId/'),
+        Uri.parse('http://127.0.0.1:8000/api/yogforum/dislike_reply/$replyId/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -138,7 +139,8 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
       final forumId = replyData!['forum_id'];
 
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/post/$forumId/add_reply/'),
+        Uri.parse(
+            'http://127.0.0.1:8000/api/yogforum/post/$forumId/add_reply/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
       );
@@ -159,7 +161,7 @@ class _ReplyDetailPageState extends State<ReplyDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/reply/$replyId/delete/'),
+        Uri.parse('http://127.0.0.1:8000/api/yogforum/reply/$replyId/delete/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
