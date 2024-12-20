@@ -1,8 +1,8 @@
 import 'dart:convert';
 
+import 'package:eventyog_mobile/pages/friends/friend_list.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -35,7 +35,12 @@ class FriendDetailPage extends StatelessWidget {
           jsonEncode(<String, String>{}),
         );
 
-        if (response['status'] == 'success') {
+        print(response);
+
+        if (response['status'] == true) {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => FriendListPage()));
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Friend added successfully!'),
@@ -67,13 +72,18 @@ class FriendDetailPage extends StatelessWidget {
           jsonEncode(<String, String>{}),
         );
 
-        if (response['status'] == 'success') {
+        if (response['status'] == true) {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => FriendListPage()));
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Friend removed successfully!'),
               backgroundColor: Colors.green,
             ),
           );
+
+          // Replace page with the previous page
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -142,7 +152,6 @@ class FriendDetailPage extends StatelessWidget {
                     icon: Icon(Icons.person_remove),
                     label: Text("Remove Friend"),
                     style: ElevatedButton.styleFrom(
-        
                       padding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       textStyle: TextStyle(fontSize: 16),
@@ -155,7 +164,6 @@ class FriendDetailPage extends StatelessWidget {
                     icon: Icon(Icons.person_add),
                     label: Text("Add Friend"),
                     style: ElevatedButton.styleFrom(
-                
                       padding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       textStyle: TextStyle(fontSize: 16),

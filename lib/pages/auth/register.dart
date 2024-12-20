@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:eventyog_mobile/pages/auth/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -30,6 +29,10 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Image.asset(
+                'assets/icon/icon.png',
+                height: 100.0,
+              ),
               const Text(
                 'Create Account',
                 style: TextStyle(
@@ -112,7 +115,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       );
 
-                      await request
+                      final response = await request
                           .login("http://10.0.2.2:8000/api/auth/login/", {
                         'username': username,
                         'password': password1,
