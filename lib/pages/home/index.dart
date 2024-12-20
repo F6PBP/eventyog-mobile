@@ -13,6 +13,8 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
 
+    print(request.jsonData);
+
     // Example registered events data
     final List<Map<String, String>> registeredEvents = [
       {
@@ -54,6 +56,7 @@ class HomePage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const SizedBox(height: 30),
                         Text(
                           "Hello, ${request.jsonData['username']}",
                           style: const TextStyle(
@@ -73,11 +76,10 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 25,
                     backgroundColor: Colors.white,
-                    backgroundImage: NetworkImage(
-                        'https://res.cloudinary.com/mxgpapp/image/upload/v1731240524/eventyog/profile/znoqqzxfewoc4nllnfz0.png'),
+                    backgroundImage: NetworkImage(request.jsonData['imageUrl']),
                   )
                 ],
               ),

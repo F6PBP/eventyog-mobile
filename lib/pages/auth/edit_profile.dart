@@ -26,7 +26,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _emailController = TextEditingController();
   final _bioController = TextEditingController();
   File? _profileImage;
-  List<String> _selectedCategories = [];
+  List<String>? _selectedCategories = [];
 
   final List<String> _categories = [
     'Olahraga',
@@ -57,6 +57,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<ProfileModel> fetchUserProfile(CookieRequest request) async {
     final response =
         await request.get("http://10.0.2.2:8000/api/auth/profile/");
+
+    print(response);
     return ProfileModel.fromJson(response);
   }
 
@@ -70,7 +72,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       requestMultipart.fields['name'] = _nameController.text;
       requestMultipart.fields['email'] = _emailController.text;
       requestMultipart.fields['bio'] = _bioController.text;
-      requestMultipart.fields['categories'] = _selectedCategories.join(',');
+      requestMultipart.fields['categories'] = _selectedCategories!.join(',');
 
       // Add the profile image if it exists
       if (_profileImage != null) {
@@ -107,12 +109,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   List<Widget> _buildCategoryChips() {
-    return _selectedCategories.toSet().map((category) {
+    return _selectedCategories!.toSet().map((category) {
       return Chip(
         label: Text(category),
         onDeleted: () {
           setState(() {
-            _selectedCategories.remove(category);
+            _selectedCategories!.remove(category);
           });
         },
       );
@@ -148,10 +150,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
           );
         } else if (snapshot.hasData) {
           final profile = snapshot.data!;
-          _nameController.text = profile.data.name!;
-          _emailController.text = profile.data.email!;
-          _bioController.text = profile.data.bio!;
-          if (_selectedCategories.isEmpty) {
+          _nameController.text = profile.data.name ?? '';
+          _emailController.text = profile.data.email ?? '';
+          _bioController.text = profile.data.bio ?? '';
+          if (_selectedCategories == null) {
+            _selectedCategories = [];
+          }
+          if (_selectedCategories!.isEmpty) {
             _selectedCategories = profile.data.categories!.split(',');
           }
 
@@ -180,7 +185,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         radius: 50,
                         backgroundImage: _profileImage != null
                             ? FileImage(_profileImage!)
-                            : NetworkImage(profile.data.imageUrl)
+                            : NetworkImage(profile.data.imageUrl!)
                                 as ImageProvider<Object>,
                         child: _profileImage == null
                             ? const Icon(Icons.add_a_photo, size: 50)
@@ -235,7 +240,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         'Select Preferred Categories',
                         style: TextStyle(fontSize: 16),
                       ),
-                      initialValue: _selectedCategories,
+                      initialValue: _selectedCategories!,
                       onConfirm: (values) {
                         setState(() {
                           _selectedCategories =

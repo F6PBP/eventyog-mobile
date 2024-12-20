@@ -101,8 +101,17 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 20),
                   CircleAvatar(
                     radius: 60,
-                    backgroundImage: NetworkImage(profile.data.imageUrl!),
+                    backgroundImage: profile.data.imageUrl != null
+                        ? NetworkImage(profile.data.imageUrl!)
+                        : null,
                     backgroundColor: Colors.grey.shade300,
+                    child: profile.data.imageUrl == null
+                        ? const Icon(
+                            Icons.person,
+                            size: 60,
+                            color: Colors.grey,
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 20),
                   Text(
