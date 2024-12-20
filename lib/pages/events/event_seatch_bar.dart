@@ -44,6 +44,14 @@ class _EventSearchBarState extends State<EventSearchBar> {
     super.initState();
     _searchController.text = widget.searchQuery;
     _selectedCategory = widget.selectedCategory;
+    _searchController.addListener(() {
+      if (_searchController.text.isEmpty) {
+        setState(() {
+          _selectedCategory = "ALL";
+        });
+        widget.onSearch(_searchController.text);
+      }
+    });
   }
 
   @override

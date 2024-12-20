@@ -49,6 +49,7 @@ class _EventListPageState extends State<EventListPage> {
             events; // Inisialisasi filteredEvents dengan semua events
         isLoading = false;
       });
+      filterEvents();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -114,6 +115,7 @@ class _EventListPageState extends State<EventListPage> {
           events.removeWhere((event) => event.pk == eventId);
           filteredEvents.removeWhere((event) => event.pk == eventId);
         });
+        filterEvents();
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Event berhasil dihapus!')),
@@ -160,11 +162,12 @@ class _EventListPageState extends State<EventListPage> {
       appBar: AppBar(
         title: Text('Event List'),
         actions: [
-          if (isAdmin)
+          if (isAdmin) ...[
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: _navigateToCreateEventPage,
             ),
+          ]
         ],
       ),
       body: Column(
