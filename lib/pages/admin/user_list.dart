@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:eventyog_mobile/models/ProfileModel.dart';
+import 'package:eventyog_mobile/pages/admin/user_detail.dart';
 
 class AdminUserListPage extends StatefulWidget {
   const AdminUserListPage({Key? key}) : super(key: key);
@@ -15,32 +16,62 @@ class _AdminUserListPageState extends State<AdminUserListPage> {
   List<ProfileModel> _filteredUsers = [];
   final TextEditingController _searchController = TextEditingController();
 
-  Future<void> fetchUsers(CookieRequest request) async {
-    try {
-      final response = await request.get("http://127.0.0.1:8000/api/auth/profile/");
-      
-      if (response != null && response is List) {
-        setState(() {
-          _users = response.map((userJson) => ProfileModel.fromJson(userJson)).toList();
-          _filteredUsers = _users;
-        });
-      } else {
-        print('Unexpected response format');
-      }
-    } catch (e) {
-      print('Error fetching users: $e');
-    }
-  }
-
-  void _filterUsers(String query) {
-    setState(() {
-      _filteredUsers = _users
-          .where((user) => 
-            user.data.name!.toLowerCase().contains(query.toLowerCase()) || 
-            user.data.email!.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final request = context.read<CookieRequest>();
+      fetchUsers(request);
     });
   }
+
+  Future<void> fetchUsers(CookieRequest request) async {
+  try {
+    final response = await request.get("http://127.0.0.1:8000/api/admin/");
+    print('Response: $response'); // Debugging the response structure
+
+    if (response != null && 
+        response['status'] == true && 
+        response['data'] is List) {
+      setState(() {
+        // Map each user item directly to a Data object
+        _users = (response['data'] as List)
+            .map<ProfileModel>((userJson) => ProfileModel(
+              status: true, 
+              message: response['message'] ?? '',
+              data: Data(
+                username: userJson['name'] ?? '', // Using name as username since API doesn't seem to have a username
+                name: userJson['name'] ?? '',
+                email: userJson['email'] ?? '',
+                dateJoined: DateTime.now(), // Default to current time since date_joined is not in API response
+                bio: userJson['bio'] ?? '', // Empty bio since it's not in API response
+                imageUrl: '',//userJson['profile_picture'] ?? '', // Empty image URL since it's not in API response
+                categories: userJson['role'] // Using role as categories
+              )
+            ))
+            .toList();
+        _filteredUsers = _users;
+      });
+    } else {
+      print('Unexpected response format');
+      print('Response type: ${response.runtimeType}');
+    }
+  } catch (e) {
+    print('Error fetching users: $e');
+    print('Detailed error: ${e.toString()}');
+  }
+}
+
+// Update filtering method
+void _filterUsers(String query) {
+  setState(() {
+    _filteredUsers = _users
+        .where((user) => 
+          user.data.name.toLowerCase().contains(query.toLowerCase()) || 
+          user.data.email.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+  });
+}
 
   void _showAddUserModal() {
     showModalBottomSheet(
@@ -80,14 +111,7 @@ class _AdminUserListPageState extends State<AdminUserListPage> {
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final request = context.read<CookieRequest>();
-      fetchUsers(request);
-    });
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -194,6 +218,14 @@ class _AdminUserListPageState extends State<AdminUserListPage> {
             ElevatedButton(
               onPressed: () {
                 // Add edit or view details functionality
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UserDetailPage(
+                      username: user.data.username, // Pass the username
+                    ),
+                  ),
+                );
               }, 
               child: const Text('View Details')
             )
