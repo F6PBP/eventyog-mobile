@@ -25,7 +25,7 @@ class _ForumPageState extends State<ForumPage> {
       isLoading = true;
     });
 
-    String url = 'http://127.0.0.1:8000/api/yogforum/';
+    String url = 'http://10.0.2.2:8000/api/yogforum/';
 
     try {
       final response = await http.get(Uri.parse(url));

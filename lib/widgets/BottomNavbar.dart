@@ -2,6 +2,7 @@ import 'package:eventyog_mobile/pages/auth/profile.dart';
 import 'package:eventyog_mobile/pages/forum/forum.dart';
 import 'package:eventyog_mobile/pages/friends/friend_list.dart';
 import 'package:eventyog_mobile/pages/home/index.dart';
+import 'package:eventyog_mobile/pages/events/event_list_page.dart';
 import 'package:flutter/material.dart';
 
 class AnimatedBottomNavigationBar extends StatelessWidget {
@@ -31,7 +32,7 @@ class AnimatedBottomNavigationBar extends StatelessWidget {
 
     final List<Widget> pages = [
       const HomePage(),
-      const HomePage(),
+      const EventListPage(),
       const ForumPage(),
       const FriendListPage(),
       ProfilePage(),

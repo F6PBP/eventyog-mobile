@@ -37,7 +37,7 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: const AnimatedBottomNavigationBar(
+      bottomNavigationBar: AnimatedBottomNavigationBar(
         currentIndex: 0,
       ),
       body: Padding(

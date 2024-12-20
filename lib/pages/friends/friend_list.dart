@@ -20,7 +20,7 @@ class _FriendListPageState extends State<FriendListPage> {
 
     Future<FriendListModel> fetchFriendList(CookieRequest request) async {
       final response =
-          await request.get("http://127.0.0.1:8000/api/friend/list/");
+          await request.get("http://10.0.2.2:8000/api/friend/list/");
       return FriendListModel.fromJson(response);
     }
 
