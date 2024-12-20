@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -53,6 +52,22 @@ class _EventFormPageState extends State<EventFormPage> {
     'Lainnya': 'LN',
   };
 
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> createEvent() async {
     try {
       final request = context.read<CookieRequest>();
@@ -65,11 +80,11 @@ class _EventFormPageState extends State<EventFormPage> {
         'category': categoryMap[category],
       };
 
-      // Tambahkan end_time jika ada
       if (endTime != null) {
-        // Validasi end_time harus setelah start_time
-        if (endTime!.isBefore(startTime!)) {
-          throw Exception('Event ends before it starts');
+        if (endTime!.isBefore(startTime!) |
+            endTime!.isAtSameMomentAs(startTime!)) {
+          _showErrorDialog('Acara berakhir sebelum dimulai');
+          return;
         }
         eventData['end_time'] = endTime!.toIso8601String();
       }
@@ -98,11 +113,20 @@ class _EventFormPageState extends State<EventFormPage> {
         options: Options(
           headers: {
             'Content-Type': 'application/json',
-            'Cookie': cookies, // Sertakan cookies untuk autentikasi
+            'Cookie': cookies,
             'X-Requested-With': 'XMLHttpRequest'
+          },
+          validateStatus: (status) {
+            return status! < 500; // Terima semua status di bawah 500
           },
         ),
       );
+
+      // Cek response status
+      if (response.statusCode == 400) {
+        // Handle error 400 dan ambil pesan error dari backend
+        throw Exception(response.data['error'] ?? 'Failed to create event');
+      }
 
       if (response.data['status'] == 'success') {
         if (mounted) {
@@ -111,8 +135,15 @@ class _EventFormPageState extends State<EventFormPage> {
           );
           Navigator.pop(context, true);
         }
-      } else {
-        throw Exception(response.data['error'] ?? 'Failed to create event');
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        // Handle DioError dan ambil pesan error dari response
+        final message =
+            e.response?.data['error'] ?? e.message ?? 'An error occurred';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $message')),
+        );
       }
     } catch (e) {
       if (mounted) {

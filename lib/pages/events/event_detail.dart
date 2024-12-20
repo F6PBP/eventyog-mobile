@@ -23,7 +23,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
   bool _hasUserTicket = false;
   bool _hasUserRated = false;
   Map<String, dynamic>? _userTicket;
-  bool _isPaymentCompleted = false;
 
   @override
   void initState() {
@@ -152,31 +151,24 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   Future<void> _fetchUserTicketStatus() async {
-    print('\n===== DEBUG _fetchUserTicketStatus =====');
     final request = context.read<CookieRequest>();
+
     try {
-      print(widget.event.pk);
-      print('Fetching user ticket status...');
       final response = await request.get(
-          'http://127.0.0.1:8000/api/yogevent/user-ticket/${widget.event.pk}/');
-
-      print('Response received:');
-      print(response);
-
+        'http://127.0.0.1:8000/api/yogevent/user-ticket/${widget.event.pk}/',
+      );
       if (mounted) {
+        final bool hasTicket = response['has_ticket'] ?? false;
+        final ticketData = response['ticket'];
         setState(() {
-          _hasUserTicket = response['has_ticket'] ?? false;
-          _userTicket = response['ticket'];
+          // Hanya set true jika benar-benar punya tiket valid
+          _hasUserTicket = hasTicket && ticketData != null;
+          _userTicket = hasTicket ? ticketData : null;
           _hasUserRated = response['has_rated'] ?? false;
-
-          print('State after update:');
-          print('_hasUserTicket: $_hasUserTicket');
-          print('_userTicket: $_userTicket');
-          print('_hasUserRated: $_hasUserRated');
         });
       }
-    } catch (e) {
-      print("Error fetching user ticket status: $e");
+    } catch (e, stackTrace) {
+      print("Stack trace: $stackTrace");
     }
   }
 
@@ -187,8 +179,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
     final bool isFree = ticket['price'] == 0;
 
     try {
-      print(
-          'Trying to call ${isFree ? "book-free-ticket" : "buy-ticket-flutter"} endpoint');
       final response = await request.post(
         isFree
             ? 'http://127.0.0.1:8000/api/yogevent/book-free-ticket/'
@@ -198,20 +188,11 @@ class _EventDetailPageState extends State<EventDetailPage> {
         },
       );
 
-      print('Response received:');
-      print(response);
-
       if (response['status'] == true) {
-        print('Success! Updating state...');
-        print('Response ticket data: ${response['ticket']}');
-
         if (mounted) {
           setState(() {
             _hasUserTicket = true;
             _userTicket = response['ticket'];
-            print('State after update:');
-            print('_hasUserTicket: $_hasUserTicket');
-            print('_userTicket: $_userTicket');
           });
         }
 
@@ -227,8 +208,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
               actions: [
                 TextButton(
                   onPressed: () async {
-                    Navigator.of(context).pop(); // Tutup dialog
-                    await _fetchUserTicketStatus(); // Tunggu hingga status ter-fetch
+                    Navigator.of(context).pop();
+                    await _fetchUserTicketStatus();
                   },
                   child: Text('OK'),
                 ),
@@ -245,30 +226,20 @@ class _EventDetailPageState extends State<EventDetailPage> {
       }
     } catch (e) {
       print('Error in _addToCart: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error processing request: $e')),
-      );
     }
   }
 
   Future<void> _deletePaidTicket() async {
-    print('\n===== DEBUG _deletePaidTicket =====');
     final request = context.read<CookieRequest>();
 
-    // Pastikan tiket berbayar memiliki ticket_id yang valid
-    print(_userTicket);
-    final ticketId = _userTicket?['id'];
-    print(ticketId);
-
-    if (ticketId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Invalid ticket data - no ticket ID found')),
-      );
+    if (_userTicket == null) {
       return;
     }
 
+    // Gunakan cart_id jika ada, jika tidak gunakan id biasa
+    final ticketId = _userTicket?['cart_id'] ?? _userTicket?['id'];
+
     try {
-      print('Attempting to delete paid ticket with ID: $ticketId');
       final response = await request.post(
         'http://127.0.0.1:8000/api/yogevent/delete-user-ticket/',
         {
@@ -276,32 +247,25 @@ class _EventDetailPageState extends State<EventDetailPage> {
         },
       );
 
-      print('Delete response:');
-      print(response);
-
       if (response['status'] == true) {
         setState(() {
           _hasUserTicket = false;
           _userTicket = null;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content:
-                Text(response['message'] ?? 'Request processed successfully'),
-          ),
-        );
-
+        // Tunggu sebentar sebelum fetch status baru
+        await Future.delayed(Duration(milliseconds: 500));
         await _fetchUserTicketStatus();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response['message'])),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? 'Failed to process request'),
-          ),
+          SnackBar(content: Text(response['message'])),
         );
       }
     } catch (e) {
-      print('Error in _deletePaidTicket: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error processing request: $e')),
       );
@@ -309,14 +273,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   Future<void> _deleteFreeTicket() async {
-    print('\n===== DEBUG _deleteFreeTicket =====');
     final request = context.read<CookieRequest>();
 
     // Pastikan tiket gratis memiliki id yang valid
     final ticketId = _userTicket?['id'];
-    print('Full ticket data: $_userTicket');
-    print('Ticket ID to delete: $ticketId');
-
     if (ticketId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Invalid ticket data - no ticket ID found')),
@@ -325,16 +285,12 @@ class _EventDetailPageState extends State<EventDetailPage> {
     }
 
     try {
-      print('Attempting to delete free ticket with ID: $ticketId');
       final response = await request.post(
         'http://127.0.0.1:8000/api/yogevent/cancel-free-booking/',
         {
           'ticket_id': ticketId.toString(),
         },
       );
-
-      print('Delete response:');
-      print(response);
 
       if (response['status'] == true) {
         setState(() {
@@ -358,7 +314,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
         );
       }
     } catch (e) {
-      print('Error in _deleteFreeTicket: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error processing request: $e')),
       );
@@ -432,23 +387,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   Widget _buildUserTicketSection() {
-    print('\n===== DEBUG _buildUserTicketSection =====');
-    print('_hasUserTicket: $_hasUserTicket');
-    print('_isPaymentCompleted: $_isPaymentCompleted');
-    print('_userTicket: $_userTicket');
-
-    if (!_hasUserTicket || _isPaymentCompleted) {
-      print('Returning empty because:');
-      print('hasUserTicket: $_hasUserTicket');
-      print('isPaymentCompleted: $_isPaymentCompleted');
+    if (!_hasUserTicket) {
       return SizedBox.shrink();
     }
 
     final price = _userTicket?['price'] ?? 0;
+    final ticketSource = _userTicket?['source'] ?? '';
     final isFreeTicker = price == 0;
-
-    print('Ticket price: $price');
-    print('Is free ticket: $isFreeTicker');
 
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8),
@@ -474,6 +419,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
+            // Tampilkan button berbeda berdasarkan jenis tiket
             if (isFreeTicker)
               ElevatedButton(
                 onPressed: _deleteFreeTicket,
@@ -484,16 +430,14 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   minimumSize: Size(double.infinity, 50),
                 ),
               )
-            else
+            else if (ticketSource == 'cart')
               ElevatedButton(
-                onPressed: () async {
-                  await _deletePaidTicket();
-                },
+                onPressed: _deletePaidTicket,
                 child: Text('Complete Payment'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
-                  minimumSize: Size(double.infinity, 50),
+                  minimumSize: const Size(double.infinity, 50),
                 ),
               ),
           ],
@@ -554,32 +498,25 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   ],
                 ),
               ),
-              // Only show rating button if tickets are available
               if (showRatingButton) ...[
                 const SizedBox(width: 16),
                 Container(
                   width: 120,
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (!_hasUserTicket) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                                'Please buy a ticket first to rate this event'),
-                          ),
-                        );
-                        return;
-                      }
-                      if (_hasUserRated) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content:
-                                  Text('You have already rated this event')),
-                        );
-                        return;
-                      }
-                      _navigateToRatingPage();
-                    },
+                    onPressed: _hasUserRated
+                        ? null // Set null untuk disable button jika sudah rated
+                        : () {
+                            if (!_hasUserTicket) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'Please buy a ticket first to rate this event'),
+                                ),
+                              );
+                              return;
+                            }
+                            _navigateToRatingPage();
+                          },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 8),
@@ -590,12 +527,12 @@ class _EventDetailPageState extends State<EventDetailPage> {
                               : Colors.blue,
                     ),
                     child: Text(
-                      _hasUserRated ? 'Already Rated' : 'Rate Event',
+                      _hasUserRated ? 'Already Rated' : 'Give Rating',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: !_hasUserTicket || _hasUserRated
                             ? Colors.grey[700]
-                            : Colors.white,
+                            : Colors.yellow,
                       ),
                     ),
                   ),
