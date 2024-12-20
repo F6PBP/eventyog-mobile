@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'package:eventyog_mobile/pages/events/event.dart';
-import 'package:eventyog_mobile/pages/events/rating_page.dart';
+import 'package:eventyog_mobile/models/EventModel.dart';
+import 'package:eventyog_mobile/pages/events/event_rating_page.dart';
 
 class EventDetailPage extends StatefulWidget {
   final Event event;

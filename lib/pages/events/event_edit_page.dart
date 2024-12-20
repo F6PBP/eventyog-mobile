@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:eventyog_mobile/pages/events/event.dart';
+import 'package:eventyog_mobile/models/EventModel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';

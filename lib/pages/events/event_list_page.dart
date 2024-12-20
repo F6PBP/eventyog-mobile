@@ -1,12 +1,13 @@
-import 'package:eventyog_mobile/pages/events/event_card.dart';
-import 'package:eventyog_mobile/pages/events/event_seatch_bar.dart';
+import 'package:eventyog_mobile/pages/events/components/event_card.dart';
+import 'package:eventyog_mobile/pages/events/components/event_search_bar.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'event.dart';
-import 'event_form_page.dart';
+
+import '../../models/EventModel.dart';
 import 'event_edit_page.dart';
+import 'event_form_page.dart';
 
 void main() {
   runApp(const EventApp());
@@ -189,60 +190,58 @@ class _EventListPageState extends State<EventListPage> {
       bottomNavigationBar: AnimatedBottomNavigationBar(
         currentIndex: 1,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              EventSearchBar(
-                onSearch: (query) {
-                  setState(() {
-                    searchQuery = query;
-                  });
-                  filterEvents();
-                },
-                onCategoryChanged: (category) {
-                  setState(() {
-                    selectedCategory = category;
-                  });
-                  filterEvents();
-                },
-                searchQuery: searchQuery,
-                selectedCategory: selectedCategory,
-              ),
-              const SizedBox(height: 16.0),
-              isLoading
-                  ? const CircularProgressIndicator()
-                  : filteredEvents.isEmpty
-                      ? const Text(
-                          'No events found',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
-                          ),
-                        )
-                      : GridView.builder(
-                          shrinkWrap: true,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 8,
-                            crossAxisSpacing: 8,
-                            childAspectRatio: 1,
-                          ),
-                          itemCount: filteredEvents.length,
-                          itemBuilder: (context, index) {
-                            final event = filteredEvents[index];
-                            return EventCard(
-                              event: event,
-                              isAdmin: isAdmin,
-                              onEdit: _navigateToEditEventPage,
-                              onDelete: _showDeleteConfirmation,
-                            );
-                          },
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            EventSearchBar(
+              onSearch: (query) {
+                setState(() {
+                  searchQuery = query;
+                });
+                filterEvents();
+              },
+              onCategoryChanged: (category) {
+                setState(() {
+                  selectedCategory = category;
+                });
+                filterEvents();
+              },
+              searchQuery: searchQuery,
+              selectedCategory: selectedCategory,
+            ),
+            const SizedBox(height: 16.0),
+            isLoading
+                ? const CircularProgressIndicator()
+                : filteredEvents.isEmpty
+                    ? const Text(
+                        'No events found',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
                         ),
-            ],
-          ),
+                      )
+                    : GridView.builder(
+                        shrinkWrap: true,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: 8,
+                          childAspectRatio: 1,
+                        ),
+                        itemCount: filteredEvents.length,
+                        itemBuilder: (context, index) {
+                          final event = filteredEvents[index];
+                          return EventCard(
+                            event: event,
+                            isAdmin: isAdmin,
+                            onEdit: _navigateToEditEventPage,
+                            onDelete: _showDeleteConfirmation,
+                          );
+                        },
+                      ),
+          ],
         ),
       ),
     );

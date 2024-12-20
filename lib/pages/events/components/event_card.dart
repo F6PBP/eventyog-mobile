@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'package:eventyog_mobile/pages/events/event.dart';
+import 'package:eventyog_mobile/models/EventModel.dart';
 import 'package:eventyog_mobile/pages/events/event_detail.dart';
 
 class EventCard extends StatelessWidget {
@@ -159,7 +159,7 @@ class EventCard extends StatelessWidget {
                         event.fields.title,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
                         maxLines: 2,
@@ -171,12 +171,12 @@ class EventCard extends StatelessWidget {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.edit,
-                                  color: Colors.blue, size: 20),
+                                  color: Colors.white, size: 20),
                               onPressed: () => onEdit(event),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete,
-                                  color: Colors.red, size: 20),
+                              icon: Icon(Icons.delete,
+                                  color: Colors.redAccent.shade200, size: 20),
                               onPressed: () => onDelete(event),
                             ),
                           ],
