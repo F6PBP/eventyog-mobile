@@ -1,1 +1,1 @@
-const fetchUrl = 'http://localhost:8000';
+const fetchUrl = 'https://eventyog.andrew-devito.website';
