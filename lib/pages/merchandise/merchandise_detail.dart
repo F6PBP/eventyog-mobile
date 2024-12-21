@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:flutter/material.dart';
 import 'edit_merchandise.dart';
 import 'package:http/http.dart' as http;
@@ -99,7 +100,7 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
   }
 
   Future<void> deleteMerchandise() async {
-    final url = "http://10.0.2.2:8000/api/merchandise/delete/${widget.id}/";
+    final url = "$fetchUrl/api/merchandise/delete/${widget.id}/";
     try {
       final response = await http.delete(
         Uri.parse(url),

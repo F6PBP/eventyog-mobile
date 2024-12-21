@@ -1,1 +1,1 @@
-const fetchUrl = 'http://10.0.2.2:8000';
+const fetchUrl = 'http://localhost:8000';

@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/models/cart_models.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -25,8 +26,7 @@ class _MyCartPageState extends State<MyCartPage> {
 
   Future<void> fetchCartData(CookieRequest request) async {
     try {
-      final response =
-          await request.get("http://10.0.2.2:8000/api/cart/get_cart_data/");
+      final response = await request.get("$fetchUrl/api/cart/get_cart_data/");
 
       if (response.containsKey('user_profile') &&
           response.containsKey('cart_events') &&
@@ -93,7 +93,7 @@ class _MyCartPageState extends State<MyCartPage> {
 
     try {
       final response = await request.post(
-        "http://10.0.2.2:8000/api/cart/checkout/",
+        "$fetchUrl/api/cart/checkout/",
         jsonEncode(cartData),
       );
       final newBalance = double.parse(response['new_wallet_balance']);
@@ -123,7 +123,7 @@ class _MyCartPageState extends State<MyCartPage> {
   Future<void> emptyCart(CookieRequest request) async {
     try {
       final response = await request.post(
-        "http://10.0.2.2:8000/api/cart/empty_cart/",
+        "$fetchUrl/api/cart/empty_cart/",
         {},
       );
 
@@ -325,7 +325,7 @@ class _MyCartPageState extends State<MyCartPage> {
 }
 
 class ApiService {
-  final String baseUrl = 'http://10.0.2.2:8000/api/cart';
+  final String baseUrl = '$fetchUrl/api/cart';
 
   Future<Map<String, dynamic>> fetchCartData() async {
     try {

@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -36,7 +37,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request
-          .get("http://10.0.2.2:8000/api/merchandise/show/${widget.eventId}/");
+          .get("$fetchUrl/api/merchandise/show/${widget.eventId}/");
 
       if (response['status'] == 'success') {
         setState(() {
@@ -57,7 +58,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
   }
 
   Future<void> deleteMerchandise(int id) async {
-    final url = "http://10.0.2.2:8000/api/merchandise/delete/$id/";
+    final url = "$fetchUrl/api/merchandise/delete/$id/";
     try {
       final response = await http.delete(
         Uri.parse(url),

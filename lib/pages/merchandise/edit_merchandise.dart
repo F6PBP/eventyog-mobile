@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -19,13 +20,13 @@ class EditMerchandise extends StatefulWidget {
     required this.id, // Initialize id
     required this.onEdit, // Initialize callback
     required this.quantity, // Initialize quantity
-  }) : assert(name != null),
-       assert(description != null),
-       assert(price != null),
-       assert(imageUrl != null),
-       assert(id != null),
-       assert(onEdit != null),
-       assert(quantity != null); // Ensure all parameters are not null
+  })  : assert(name != null),
+        assert(description != null),
+        assert(price != null),
+        assert(imageUrl != null),
+        assert(id != null),
+        assert(onEdit != null),
+        assert(quantity != null); // Ensure all parameters are not null
 
   @override
   _EditMerchandiseState createState() => _EditMerchandiseState();
@@ -60,7 +61,7 @@ class _EditMerchandiseState extends State<EditMerchandise> {
   }
 
   Future<void> _editMerchandise() async {
-    final url = Uri.parse('http://10.0.2.2:8000/api/merchandise/edit/${widget.id}/');
+    final url = Uri.parse('$fetchUrl/api/merchandise/edit/${widget.id}/');
     final headers = {
       'Content-Type': 'application/json',
     };
@@ -69,7 +70,8 @@ class _EditMerchandiseState extends State<EditMerchandise> {
       'description': descriptionController.text,
       'price': double.parse(priceController.text),
       'image_url': imageUrlController.text,
-      'quantity': int.parse(quantityController.text), // Add quantity to request body
+      'quantity':
+          int.parse(quantityController.text), // Add quantity to request body
     });
 
     final response = await http.put(url, headers: headers, body: body);

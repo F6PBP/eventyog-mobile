@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -12,10 +13,11 @@ class CreateMerchandise extends StatelessWidget {
   final VoidCallback onCreate; // Add callback for refetching
   final String eventId; // Add eventId field
 
-  CreateMerchandise({required this.onCreate, required this.eventId}); // Update constructor
+  CreateMerchandise(
+      {required this.onCreate, required this.eventId}); // Update constructor
 
   Future<void> _createMerchandise(BuildContext context) async {
-    final url = Uri.parse('http://10.0.2.2:8000/api/merchandise/create/');
+    final url = Uri.parse('$fetchUrl/api/merchandise/create/');
     final headers = {
       'Content-Type': 'application/json',
     };
@@ -32,7 +34,8 @@ class CreateMerchandise extends StatelessWidget {
 
     if (response.statusCode == 201) {
       onCreate(); // Call the callback to refetch data
-      Navigator.pop(context); // Redirect to the previous page (list of merchandise)
+      Navigator.pop(
+          context); // Redirect to the previous page (list of merchandise)
     } else {
       // Handle error
       ScaffoldMessenger.of(context).showSnackBar(
