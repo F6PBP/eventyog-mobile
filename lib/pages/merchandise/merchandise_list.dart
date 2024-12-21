@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'merchandise_card.dart';
 import 'merchandise_detail.dart';
 import 'create_merchandise.dart';
@@ -32,18 +33,27 @@ class _MerchandiseListState extends State<MerchandiseList> {
     fetchMerchandise();
   }
 
+  @override
+  void dispose() {
+    _saveCartState();
+    super.dispose();
+  }
+
   Future<void> fetchMerchandise() async {
     final request = context.read<CookieRequest>();
     try {
       final response = await request
-          .get("http://10.0.2.2:8000/api/merchandise/show/${widget.eventId}/");
+          .get("http://127.0.0.1:8000/api/merchandise/show/${widget.eventId}/");
 
       if (response['status'] == 'success') {
         setState(() {
           merchandise = response['data'];
           isAdmin = response['is_admin'] ?? false;
           isLoading = false;
-          _itemAmount = List<int>.filled(merchandise.length, 0);
+          if (_itemAmount.isEmpty) {
+            _itemAmount = List<int>.filled(merchandise.length, 0);
+          }
+          _restoreCartState(); // Restore cart state after fetching merchandise
         });
       } else {
         throw Exception('Failed to load merchandise');
@@ -57,7 +67,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
   }
 
   Future<void> deleteMerchandise(int id) async {
-    final url = "http://10.0.2.2:8000/api/merchandise/delete/$id/";
+    final url = "http://127.0.0.1:8000/api/merchandise/delete/$id/";
     try {
       final response = await http.delete(
         Uri.parse(url),
@@ -120,7 +130,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
     }
   }
 
-  void _increaseBoughtQuantity(int index) {
+  void _increaseBoughtQuantity(int index) async {
     if (index < 0 || index >= _itemAmount.length) {
       debugPrint("Invalid index: $index");
       return;
@@ -130,6 +140,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
       if (_itemAmount[index] < merchandise[index]['quantity']) {
         _itemAmount[index]++;
         cartItems[merchandise[index]['name']] = _itemAmount[index];
+        _updateCart(merchandise[index]['pk'], _itemAmount[index]);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -141,7 +152,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
     });
   }
 
-  void _decreaseBoughtQuantity(int index) {
+  void _decreaseBoughtQuantity(int index) async {
     if (index < 0 || index >= _itemAmount.length) {
       debugPrint("Invalid index: $index");
       return;
@@ -155,6 +166,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
         } else {
           cartItems[merchandise[index]['name']] = _itemAmount[index];
         }
+        _updateCart(merchandise[index]['pk'], _itemAmount[index]);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -166,12 +178,71 @@ class _MerchandiseListState extends State<MerchandiseList> {
     });
   }
 
+  Future<void> _updateCart(int itemId, int quantity) async {
+    final request = context.read<CookieRequest>();
+    try {
+      final response = await request.postJson(
+        "http://127.0.0.1:8000/api/merchandise/add-to-cart/",
+        jsonEncode({
+          'items': [
+            {
+              'id': itemId,
+              'quantity': quantity,
+            }
+          ]
+        }),
+      );
+
+      if (response['status'] != 'success') {
+        throw Exception('Failed to update cart');
+      }
+    } catch (e) {
+      print('Error updating cart: $e');
+    }
+  }
+
   void _navigateToCartPage() {
     // Navigator.push(
     //   context,
     //   MaterialPageRoute(
     //       builder: (context) => CartPage()), // Placeholder CartPage
     // );
+  }
+
+  void _saveCartState() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('cartItems', jsonEncode(cartItems));
+    prefs.setString('itemAmount', jsonEncode(_itemAmount));
+  }
+
+  void _restoreCartState() async {
+    final request = context.read<CookieRequest>();
+    try {
+      final response = await request.get("http://127.0.0.1:8000/api/cart/get_cart_data/");
+
+      if (response.containsKey('cart_events') &&
+          response.containsKey('cart_merch')) {
+        final cartData = response['cart_merch'];
+
+        final restoredCartItems = {for (var item in cartData) item['name']: item['quantity']};
+        final restoredItemAmount = List<int>.filled(merchandise.length, 0);
+
+        for (var i = 0; i < merchandise.length; i++) {
+          if (restoredCartItems.containsKey(merchandise[i]['name'])) {
+            restoredItemAmount[i] = restoredCartItems[merchandise[i]['name']]!;
+          }
+        }
+
+        setState(() {
+          cartItems = restoredCartItems.cast<String, int>();
+          _itemAmount = restoredItemAmount;
+        });
+      } else {
+        throw Exception('Failed to load cart data');
+      }
+    } catch (e) {
+      print('Error restoring cart state: $e');
+    }
   }
 
   @override
@@ -278,6 +349,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
                                 _increaseBoughtQuantity(index),
                             decreaseBoughtQuantity: () =>
                                 _decreaseBoughtQuantity(index),
+                            itemAmount: _itemAmount[index], // Pass the item amount
                           ),
                           SizedBox(height: 20),
                         ],

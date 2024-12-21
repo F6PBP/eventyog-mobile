@@ -15,7 +15,7 @@ class CreateMerchandise extends StatelessWidget {
   CreateMerchandise({required this.onCreate, required this.eventId}); // Update constructor
 
   Future<void> _createMerchandise(BuildContext context) async {
-    final url = Uri.parse('http://10.0.2.2:8000/api/merchandise/create/');
+    final url = Uri.parse('http://127.0.0.1:8000/api/merchandise/create/');
     final headers = {
       'Content-Type': 'application/json',
     };
