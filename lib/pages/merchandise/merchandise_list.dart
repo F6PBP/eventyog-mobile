@@ -1,4 +1,5 @@
 import 'package:eventyog_mobile/const.dart';
+import 'package:eventyog_mobile/pages/cart/MyCart.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -183,7 +184,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.postJson(
-        "http://127.0.0.1:8000/api/merchandise/add-to-cart/",
+        "$fetchUrl/api/merchandise/add-to-cart/",
         jsonEncode({
           'items': [
             {
@@ -203,11 +204,11 @@ class _MerchandiseListState extends State<MerchandiseList> {
   }
 
   void _navigateToCartPage() {
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //       builder: (context) => CartPage()), // Placeholder CartPage
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => MyCartPage()), // Placeholder CartPage
+    );
   }
 
   void _saveCartState() async {
