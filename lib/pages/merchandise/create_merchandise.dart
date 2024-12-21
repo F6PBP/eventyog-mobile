@@ -10,11 +10,12 @@ class CreateMerchandise extends StatelessWidget {
   final TextEditingController _imageUrlController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
   final VoidCallback onCreate; // Add callback for refetching
+  final String eventId; // Add eventId field
 
-  CreateMerchandise({required this.onCreate}); // Initialize callback
+  CreateMerchandise({required this.onCreate, required this.eventId}); // Update constructor
 
   Future<void> _createMerchandise(BuildContext context) async {
-    final url = Uri.parse('http://127.0.0.1:8000/api/merchandise/create/');
+    final url = Uri.parse('http://10.0.2.2:8000/api/merchandise/create/');
     final headers = {
       'Content-Type': 'application/json',
     };
@@ -24,7 +25,7 @@ class CreateMerchandise extends StatelessWidget {
       'price': double.parse(_priceController.text),
       'image_url': _imageUrlController.text,
       'quantity': int.parse(_quantityController.text),
-      'event_id': '7e74fdc9-c388-4d16-ae1b-58eac2b1438e', // Replace with the actual event ID
+      'event_id': eventId, // Use the passed eventId
     });
 
     final response = await http.post(url, headers: headers, body: body);

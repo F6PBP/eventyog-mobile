@@ -60,7 +60,7 @@ class _EditMerchandiseState extends State<EditMerchandise> {
   }
 
   Future<void> _editMerchandise() async {
-    final url = Uri.parse('http://127.0.0.1:8000/api/merchandise/edit/${widget.id}/');
+    final url = Uri.parse('http://10.0.2.2:8000/api/merchandise/edit/${widget.id}/');
     final headers = {
       'Content-Type': 'application/json',
     };

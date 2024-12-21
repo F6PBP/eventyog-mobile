@@ -4,6 +4,7 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:eventyog_mobile/models/EventModel.dart';
 import 'package:eventyog_mobile/pages/events/event_rating_page.dart';
+import 'package:eventyog_mobile/pages/merchandise/merchandise_list.dart';
 
 class EventDetailPage extends StatefulWidget {
   final Event event;
@@ -772,6 +773,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   SizedBox(height: 16),
                   _buildUserTicketSection(),
                   SizedBox(height: 16),
+
+                  // Merchandise Section
+                  MerchandiseList(eventId: widget.event.pk),
+                  const SizedBox(height: 16),
 
                   // Reviews Section Header
                   const Text(
