@@ -14,7 +14,7 @@ class MyCartPage extends StatefulWidget {
 class _MyCartPageState extends State<MyCartPage> {
   List<dynamic> localCartEvents = [];
   List<dynamic> localCartMerch = [];
-  UserProfile? userProfile; // Tambahkan variabel ini
+  UserProfile? userProfile;
   Future<void>? _fetchCartFuture;
 
   @override
@@ -33,7 +33,6 @@ class _MyCartPageState extends State<MyCartPage> {
           response.containsKey('cart_merch')) {
         if (mounted) {
           setState(() {
-            // Perbaikan: Ambil userProfile dari response
             userProfile = UserProfile.fromJson(response['user_profile']);
             localCartEvents = (response['cart_events'] as List)
                 .map((e) => EventCart.fromJson(e))
@@ -98,7 +97,6 @@ class _MyCartPageState extends State<MyCartPage> {
       );
       final newBalance = double.parse(response['new_wallet_balance']);
       if (response['status'] == true) {
-        // Respons berhasil
         setState(() {
           userProfile?.walletBalance = newBalance;
           localCartEvents.clear();
@@ -114,12 +112,11 @@ class _MyCartPageState extends State<MyCartPage> {
     } catch (e) {
       print('Error during checkout: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('transaction success')),
+        SnackBar(content: Text('Transaction failed')),
       );
     }
   }
 
-// Fungsi untuk mengosongkan keranjang di server
   Future<void> emptyCart(CookieRequest request) async {
     try {
       final response = await request.post(
@@ -139,12 +136,25 @@ class _MyCartPageState extends State<MyCartPage> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(item.imageUrl,
-                width: 100, height: 100, fit: BoxFit.cover),
-            const SizedBox(width: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                item.imageUrl,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.broken_image,
+                  size: 80,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,9 +162,16 @@ class _MyCartPageState extends State<MyCartPage> {
                   Text(
                     isEvent ? item.ticketName : item.name,
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                  Text('Price: Rp${item.price.toStringAsFixed(2)}'),
+                  Text(
+                    'Price: Rp${item.price.toStringAsFixed(2)}',
+                    style: const TextStyle(fontSize: 14),
+                  ),
                   Row(
                     children: [
                       IconButton(
@@ -162,7 +179,6 @@ class _MyCartPageState extends State<MyCartPage> {
                         onPressed: () {
                           setState(() {
                             if (item.quantity > 0) {
-                              // Kuantitas minimum 0
                               item.quantity -= 1;
                             }
                           });
@@ -182,7 +198,10 @@ class _MyCartPageState extends State<MyCartPage> {
                 ],
               ),
             ),
-            Text('Rp${(item.quantity * item.price).toStringAsFixed(2)}'),
+            Text(
+              'Rp${(item.quantity * item.price).toStringAsFixed(2)}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       ),
@@ -191,9 +210,9 @@ class _MyCartPageState extends State<MyCartPage> {
 
   @override
   Widget build(BuildContext context) {
-    double totalPrice = _calculateTotalPrice(); // Hitung total harga
+    double totalPrice = _calculateTotalPrice();
     double walletBalance = userProfile?.walletBalance ?? 0.0;
-    double remainingBalance = walletBalance - totalPrice; // Sisa uang
+    double remainingBalance = walletBalance - totalPrice;
 
     return Scaffold(
       appBar: AppBar(title: const Text("My Cart")),
@@ -205,102 +224,101 @@ class _MyCartPageState extends State<MyCartPage> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
-            return Column(
-              children: [
-                Expanded(
-                  child: ListView(
-                    children: [
-                      // Menampilkan item Event
-                      if (localCartEvents.isNotEmpty)
-                        ...localCartEvents
-                            .map<Widget>(
-                                (event) => _cartItem(event, isEvent: true))
-                            .toList(),
-
-                      // Menampilkan item Merchandise
-                      if (localCartMerch.isNotEmpty)
-                        ...localCartMerch
-                            .map<Widget>(
-                                (merch) => _cartItem(merch, isEvent: false))
-                            .toList(),
-                    ],
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        if (localCartEvents.isNotEmpty)
+                          ...localCartEvents
+                              .map<Widget>(
+                                  (event) => _cartItem(event, isEvent: true))
+                              .toList(),
+                        if (localCartMerch.isNotEmpty)
+                          ...localCartMerch
+                              .map<Widget>(
+                                  (merch) => _cartItem(merch, isEvent: false))
+                              .toList(),
+                      ],
+                    ),
                   ),
-                ),
-
-                // Total Price, Wallet Balance, dan Sisa Uang di Bawah
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  color: Colors.grey[200],
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Wallet Balance: Rp${walletBalance.toStringAsFixed(2)}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Total Price: Rp${totalPrice.toStringAsFixed(2)}',
-                        style:
-                            const TextStyle(fontSize: 16, color: Colors.blue),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Remaining Balance: Rp${remainingBalance.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color:
-                              remainingBalance < 0 ? Colors.red : Colors.green,
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Wallet Balance: Rp${walletBalance.toStringAsFixed(2)}',
+                          style: const TextStyle(fontSize: 16),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        Text(
+                          'Total Price: Rp${totalPrice.toStringAsFixed(2)}',
+                          style:
+                              const TextStyle(fontSize: 16, color: Colors.blue),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Remaining Balance: Rp${remainingBalance.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: remainingBalance < 0
+                                ? Colors.red
+                                : Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-
-                // Tombol Checkout di Bawah
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                    onPressed: () {
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final request = context.read<CookieRequest>();
+                        checkout(request);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      child: const Text(
+                        "Checkout",
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
                       final request = context.read<CookieRequest>();
-                      checkout(request);
+                      await emptyCart(request);
+
+                      setState(() {
+                        localCartEvents.clear();
+                        localCartMerch.clear();
+                      });
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content:
+                                Text('Cart has been emptied successfully')),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: Colors.red,
                     ),
                     child: const Text(
-                      "Checkout",
-                      style: TextStyle(fontSize: 18),
+                      "Empty Cart",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    final request = context.read<CookieRequest>();
-                    await emptyCart(request); // Panggil fungsi emptyCart
-
-                    setState(() {
-                      localCartEvents
-                          .clear(); // Kosongkan state lokal untuk event
-                      localCartMerch
-                          .clear(); // Kosongkan state lokal untuk merchandise
-                    });
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Cart has been emptied successfully')),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
-                    backgroundColor: Colors.red, // Warna merah untuk tombol
-                  ),
-                  child: const Text(
-                    "Empty Cart",
-                    style: TextStyle(fontSize: 18, color: Colors.white),
-                  ),
-                ),
-              ],
+                ],
+              ),
             );
           }
         },
@@ -308,7 +326,6 @@ class _MyCartPageState extends State<MyCartPage> {
     );
   }
 
-// Fungsi untuk menghitung total harga semua item di keranjang
   double _calculateTotalPrice() {
     double total = 0.0;
 
