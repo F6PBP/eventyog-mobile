@@ -23,6 +23,8 @@ class _MerchandiseListState extends State<MerchandiseList> {
   bool isLoading = true;
   String errorMessage = '';
   List<int> _itemAmount = [];
+  Map<String, int> cartItems =
+      {}; // Map to store selected merchandise and their quantities
 
   @override
   void initState() {
@@ -41,8 +43,6 @@ class _MerchandiseListState extends State<MerchandiseList> {
           merchandise = response['data'];
           isAdmin = response['is_admin'] ?? false;
           isLoading = false;
-
-          // Initialize _itemAmount to match the length of the merchandise list
           _itemAmount = List<int>.filled(merchandise.length, 0);
         });
       } else {
@@ -69,7 +69,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         if (responseBody['status'] == 'success') {
-          await fetchMerchandise(); // Refetch merchandise after deletion
+          await fetchMerchandise();
         } else {
           throw Exception('Failed to delete merchandise');
         }
@@ -120,7 +120,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
     }
   }
 
-  void __increaseBoughtQuantity(int index) {
+  void _increaseBoughtQuantity(int index) {
     if (index < 0 || index >= _itemAmount.length) {
       debugPrint("Invalid index: $index");
       return;
@@ -129,6 +129,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
     setState(() {
       if (_itemAmount[index] < merchandise[index]['quantity']) {
         _itemAmount[index]++;
+        cartItems[merchandise[index]['name']] = _itemAmount[index];
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -140,14 +141,20 @@ class _MerchandiseListState extends State<MerchandiseList> {
     });
   }
 
-  void __decreaseBoughtQuantity(int index) {
+  void _decreaseBoughtQuantity(int index) {
     if (index < 0 || index >= _itemAmount.length) {
       debugPrint("Invalid index: $index");
       return;
     }
+
     setState(() {
       if (_itemAmount[index] > 0) {
         _itemAmount[index]--;
+        if (_itemAmount[index] == 0) {
+          cartItems.remove(merchandise[index]['name']);
+        } else {
+          cartItems[merchandise[index]['name']] = _itemAmount[index];
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -157,6 +164,14 @@ class _MerchandiseListState extends State<MerchandiseList> {
         );
       }
     });
+  }
+
+  void _navigateToCartPage() {
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //       builder: (context) => CartPage()), // Placeholder CartPage
+    // );
   }
 
   @override
@@ -260,15 +275,78 @@ class _MerchandiseListState extends State<MerchandiseList> {
                                 ? () => deleteMerchandise(merchandiseItem['pk'])
                                 : null,
                             increaseBoughtQuantity: () =>
-                                __increaseBoughtQuantity(index),
+                                _increaseBoughtQuantity(index),
                             decreaseBoughtQuantity: () =>
-                                __decreaseBoughtQuantity(index),
+                                _decreaseBoughtQuantity(index),
                           ),
                           SizedBox(height: 20),
                         ],
                       );
                     },
                   ),
+        if (cartItems.isNotEmpty)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Card(
+              elevation: 8,
+              shadowColor: Colors.black.withOpacity(0.2),
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cart',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    ...cartItems.entries.map((entry) {
+                      return Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  entry.key.length > 100
+                                      ? '${entry.key.substring(0, 100)}...'
+                                      : entry.key,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Text('${entry.value}'),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      );
+                    }).toList(),
+                    SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        onPressed: _navigateToCartPage,
+                        icon: Icon(Icons.shopping_cart, color: Colors.white),
+                        label: const Text('Go to Cart'),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 24), // Increased horizontal padding
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
