@@ -110,7 +110,6 @@ class EventCard extends StatelessWidget {
                       },
                     ),
             ),
-            // Gradient overlay
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

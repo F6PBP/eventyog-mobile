@@ -101,17 +101,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 20),
                   CircleAvatar(
                     radius: 60,
-                    backgroundImage: profile.data.imageUrl != null
-                        ? NetworkImage(profile.data.imageUrl!)
-                        : null,
+                    backgroundImage: NetworkImage(profile.data.imageUrl!),
                     backgroundColor: Colors.grey.shade300,
-                    child: profile.data.imageUrl == null
-                        ? const Icon(
-                            Icons.person,
-                            size: 60,
-                            color: Colors.grey,
-                          )
-                        : null,
                   ),
                   const SizedBox(height: 20),
                   Text(
@@ -185,7 +176,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 30, vertical: 15),
-                          backgroundColor: Colors.blue,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

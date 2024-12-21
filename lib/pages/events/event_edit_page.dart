@@ -203,20 +203,11 @@ class _EditEventPageState extends State<EditEventPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Event'),
-        elevation: 0,
+        title:
+            const Text('Update Event', style: TextStyle(color: Colors.white)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Theme.of(context).primaryColor.withOpacity(0.05),
-              Colors.white,
-            ],
-          ),
-        ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
@@ -453,15 +444,16 @@ class _EditEventPageState extends State<EditEventPage> {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
+                                minimumSize: const Size(double.infinity, 50),
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
+                                    const EdgeInsets.symmetric(vertical: 16.0),
                               ),
                               child: const Text(
                                 'Update Event',
-                                style: TextStyle(fontSize: 16),
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.white),
                               ),
                             ),
                             const SizedBox(height: 8),
