@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,7 @@ class EventCard extends StatelessWidget {
         try {
           final request = context.read<CookieRequest>();
           final response = await request.get(
-            'http://10.0.2.2:8000/api/yogevent/${event.pk}/',
+            '$fetchUrl/api/yogevent/${event.pk}/',
           );
 
           final detailEvent = Event.fromJson(response);

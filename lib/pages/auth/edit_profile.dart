@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/models/ProfileModel.dart';
 import 'package:eventyog_mobile/pages/auth/profile.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
@@ -55,8 +56,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Future<ProfileModel> fetchUserProfile(CookieRequest request) async {
-    final response =
-        await request.get("http://10.0.2.2:8000/api/auth/profile/");
+    final response = await request.get("$fetchUrl/api/auth/profile/");
 
     print(response);
     return ProfileModel.fromJson(response);
@@ -65,7 +65,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<void> updateUserProfile(CookieRequest request) async {
     if (_formKey.currentState!.validate()) {
       // Prepare the data for the profile update
-      final uri = Uri.parse("http://10.0.2.2:8000/api/auth/profile/edit/");
+      final uri = Uri.parse("$fetchUrl/api/auth/profile/edit/");
       final requestMultipart = http.MultipartRequest('POST', uri);
 
       // Add form data

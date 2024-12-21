@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -22,7 +23,7 @@ class _EditPostPageState extends State<EditPostPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/edit/${widget.postId}/'),
+        Uri.parse('$fetchUrl/api/yogforum/edit/${widget.postId}/'),
         body: {
           'content': _contentController.text,
         },

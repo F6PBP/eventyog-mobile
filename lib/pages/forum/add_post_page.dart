@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -30,7 +31,7 @@ class _AddPostPageState extends State<AddPostPage> {
       }
 
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/add-post/'),
+        Uri.parse('$fetchUrl/api/yogforum/add-post/'),
         headers: {
           'Content-Type': 'application/json',
         },

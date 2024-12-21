@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:eventyog_mobile/const.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -90,7 +91,7 @@ class _EventFormPageState extends State<EventFormPage> {
       final cookies = request.cookies;
 
       final response = await dio.post(
-        'http://10.0.2.2:8000/api/yogevent/create/',
+        '$fetchUrl/api/yogevent/create/',
         data: eventData,
         options: Options(
           headers: {

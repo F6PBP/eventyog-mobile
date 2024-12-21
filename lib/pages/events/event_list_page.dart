@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/pages/events/components/event_card.dart';
 import 'package:eventyog_mobile/pages/events/components/event_search_bar.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
@@ -63,7 +64,7 @@ class _EventListPageState extends State<EventListPage> {
     try {
       final request = context.read<CookieRequest>();
       final response = await request.get(
-        'http://10.0.2.2:8000/api/yogevent/events/',
+        '$fetchUrl/api/yogevent/events/',
       );
 
       List jsonResponse = response;
@@ -109,7 +110,7 @@ class _EventListPageState extends State<EventListPage> {
     try {
       final request = context.read<CookieRequest>();
       final response = await request.get(
-        'http://10.0.2.2:8000/api/yogevent/main/',
+        '$fetchUrl/api/yogevent/main/',
       );
 
       setState(() {
@@ -127,7 +128,7 @@ class _EventListPageState extends State<EventListPage> {
       final request = context.read<CookieRequest>();
 
       final response = await request.post(
-        'http://10.0.2.2:8000/api/yogevent/delete/$eventId/',
+        '$fetchUrl/api/yogevent/delete/$eventId/',
         {},
       );
 

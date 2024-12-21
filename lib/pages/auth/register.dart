@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/pages/auth/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -100,7 +101,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   String password2 = _confirmPasswordController.text;
 
                   final response = await request.postJson(
-                      "http://10.0.2.2:8000/api/auth/register/",
+                      "$fetchUrl/api/auth/register/",
                       jsonEncode({
                         "username": username,
                         "password1": password1,
@@ -115,8 +116,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       );
 
-                      final response = await request
-                          .login("http://10.0.2.2:8000/api/auth/login/", {
+                      final response =
+                          await request.login("$fetchUrl/api/auth/login/", {
                         'username': username,
                         'password': password1,
                       });

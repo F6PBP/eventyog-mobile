@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/pages/forum/reply_detail.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -45,7 +46,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/post/${widget.postId}/'),
+        Uri.parse('$fetchUrl/api/yogforum/post/${widget.postId}/'),
       );
 
       if (response.statusCode == 200) {
@@ -77,8 +78,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2:8000/api/yogforum/like_post/${widget.postId}/'),
+        Uri.parse('$fetchUrl/api/yogforum/like_post/${widget.postId}/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -108,8 +108,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2:8000/api/yogforum/dislike_post/${widget.postId}/'),
+        Uri.parse('$fetchUrl/api/yogforum/dislike_post/${widget.postId}/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -139,7 +138,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/like_reply/$replyId/'),
+        Uri.parse('$fetchUrl/api/yogforum/like_reply/$replyId/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -165,7 +164,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/dislike_reply/$replyId/'),
+        Uri.parse('$fetchUrl/api/yogforum/dislike_reply/$replyId/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -191,8 +190,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2:8000/api/yogforum/edit/${forumPost!['id']}/'),
+        Uri.parse('$fetchUrl/api/yogforum/edit/${forumPost!['id']}/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
@@ -233,8 +231,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
       }
 
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2:8000/api/yogforum/post/${forumPost!['id']}/add_reply/'),
+        Uri.parse('$fetchUrl/api/yogforum/post/${forumPost!['id']}/add_reply/'),
         body: jsonEncode(body),
         headers: {'Content-Type': 'application/json'},
       );
@@ -255,8 +252,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2:8000/api/yogforum/post/${forumPost!['id']}/delete/'),
+        Uri.parse('$fetchUrl/api/yogforum/post/${forumPost!['id']}/delete/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -285,7 +281,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/reply/$replyId/delete/'),
+        Uri.parse('$fetchUrl/api/yogforum/reply/$replyId/delete/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );

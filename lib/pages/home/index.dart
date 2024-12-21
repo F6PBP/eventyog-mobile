@@ -1,4 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/models/EventModel.dart';
 import 'package:eventyog_mobile/pages/home/widgets/event_card.dart';
 import 'package:eventyog_mobile/pages/home/widgets/upcoming_card.dart';
@@ -31,8 +32,8 @@ class _HomePageState extends State<HomePage> {
 
     try {
       final request = context.read<CookieRequest>();
-      final response = await request
-          .get('http://10.0.2.2:8000/api/yogevent/upcoming-events/');
+      final response =
+          await request.get('$fetchUrl/api/yogevent/upcoming-events/');
 
       List<dynamic> jsonResponse = response as List<dynamic>;
 

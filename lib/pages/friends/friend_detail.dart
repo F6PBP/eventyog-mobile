@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/pages/friends/friend_list.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +32,7 @@ class FriendDetailPage extends StatelessWidget {
     Future<void> addFriend(CookieRequest request) async {
       try {
         final response = await request.postJson(
-          "http://10.0.2.2:8000/api/friend/add/$id",
+          "$fetchUrl/api/friend/add/$id",
           jsonEncode(<String, String>{}),
         );
 
@@ -66,7 +67,7 @@ class FriendDetailPage extends StatelessWidget {
     Future<void> removeFriend(CookieRequest request) async {
       try {
         final response = await request.postJson(
-          "http://10.0.2.2:8000/api/friend/remove/$id",
+          "$fetchUrl/api/friend/remove/$id",
           jsonEncode(<String, String>{}),
         );
 

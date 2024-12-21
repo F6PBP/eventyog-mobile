@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/models/FriendListModel.dart';
 import 'package:eventyog_mobile/pages/friends/friend_detail.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
@@ -18,8 +19,7 @@ class _FriendListPageState extends State<FriendListPage> {
     final request = context.watch<CookieRequest>();
 
     Future<FriendListModel> fetchFriendList(CookieRequest request) async {
-      final response =
-          await request.get("http://10.0.2.2:8000/api/friend/list/");
+      final response = await request.get("$fetchUrl/api/friend/list/");
       return FriendListModel.fromJson(response);
     }
 

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/models/EventModel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -148,7 +149,7 @@ class _EditEventPageState extends State<EditEventPage> {
 
       // Mengirim eventData sebagai json dengan method post dari CookieRequest
       final response = await request.postJson(
-          'http://10.0.2.2:8000/api/yogevent/update/${widget.event.pk}/',
+          '$fetchUrl/api/yogevent/update/${widget.event.pk}/',
           jsonEncode(eventData) // Encode eventData menjadi JSON string
           );
 

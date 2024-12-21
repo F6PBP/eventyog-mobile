@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/pages/forum/add_post_page.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,7 @@ class _ForumPageState extends State<ForumPage> {
       isLoading = true;
     });
 
-    String url = 'http://10.0.2.2:8000/api/yogforum/';
+    String url = '$fetchUrl/api/yogforum/';
 
     try {
       final response = await http.get(Uri.parse(url));
