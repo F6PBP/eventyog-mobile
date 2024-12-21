@@ -26,7 +26,7 @@ class _MyCartPageState extends State<MyCartPage> {
   Future<void> fetchCartData(CookieRequest request) async {
     try {
       final response =
-          await request.get("http://10.0.2.2:8000/api/cart/get_cart_data/");
+          await request.get("http://localhost:8000/api/cart/get_cart_data/");
 
       if (response.containsKey('user_profile') &&
           response.containsKey('cart_events') &&
@@ -139,12 +139,28 @@ class _MyCartPageState extends State<MyCartPage> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(item.imageUrl,
-                width: 100, height: 100, fit: BoxFit.cover),
-            const SizedBox(width: 16),
+            // Gambar dengan batas ukuran
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                item.imageUrl,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.broken_image,
+                  size: 80,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // Informasi Produk
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,9 +168,16 @@ class _MyCartPageState extends State<MyCartPage> {
                   Text(
                     isEvent ? item.ticketName : item.name,
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                  Text('Price: Rp${item.price.toStringAsFixed(2)}'),
+                  Text(
+                    'Price: Rp${item.price.toStringAsFixed(2)}',
+                    style: const TextStyle(fontSize: 14),
+                  ),
                   Row(
                     children: [
                       IconButton(
@@ -162,7 +185,6 @@ class _MyCartPageState extends State<MyCartPage> {
                         onPressed: () {
                           setState(() {
                             if (item.quantity > 0) {
-                              // Kuantitas minimum 0
                               item.quantity -= 1;
                             }
                           });
@@ -182,7 +204,12 @@ class _MyCartPageState extends State<MyCartPage> {
                 ],
               ),
             ),
-            Text('Rp${(item.quantity * item.price).toStringAsFixed(2)}'),
+
+            // Harga Total per Item
+            Text(
+              'Rp${(item.quantity * item.price).toStringAsFixed(2)}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       ),
@@ -325,7 +352,7 @@ class _MyCartPageState extends State<MyCartPage> {
 }
 
 class ApiService {
-  final String baseUrl = 'http://10.0.2.2:8000/api/cart';
+  final String baseUrl = 'http://localhost:8000/api/cart';
 
   Future<Map<String, dynamic>> fetchCartData() async {
     try {
