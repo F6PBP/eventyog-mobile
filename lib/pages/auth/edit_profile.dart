@@ -249,14 +249,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       },
                     ),
                     const SizedBox(height: 16.0),
-                    // Wrap(
-                    //   spacing: 8.0,
-                    //   children: _buildCategoryChips(),
-                    // ),
                     const SizedBox(height: 24.0),
                     ElevatedButton(
                       onPressed: () => updateUserProfile(request),
-                      child: const Text('Save Changes'),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      ),
+                      child: const Text(
+                        'Save Changes',
+                        style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white),
+                      ),
                     ),
                   ],
                 ),

@@ -79,6 +79,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
           .get('http://10.0.2.2:8000/api/yogevent/rate/${widget.event.pk}/');
 
       if (mounted) {
+        print('Response received:');
+        print(response);
         setState(() {
           _isLoadingRatings = false;
           _averageRating = (response['average_rating'] ?? 0).toDouble();
@@ -252,7 +254,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   Future<void> _deletePaidTicket() async {
-    print('\n===== DEBUG _deletePaidTicket =====');
     final request = context.read<CookieRequest>();
 
     // Pastikan tiket berbayar memiliki ticket_id yang valid
@@ -632,13 +633,19 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         children: [
                           CircleAvatar(
                             backgroundColor: Colors.blue.shade100,
-                            child: Text(
-                              latestRating['username'][0].toUpperCase(),
-                              style: TextStyle(
-                                color: Colors.blue.shade900,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            backgroundImage: latestRating
+                                    .containsKey('profile_picture')
+                                ? NetworkImage(latestRating['profile_picture'])
+                                : null,
+                            child: latestRating.containsKey('profile_picture')
+                                ? null
+                                : Text(
+                                    latestRating['username'][0].toUpperCase(),
+                                    style: TextStyle(
+                                      color: Colors.blue.shade900,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                           ),
                           SizedBox(width: 12),
                           Expanded(

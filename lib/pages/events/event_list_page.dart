@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/EventModel.dart';
 import 'event_edit_page.dart';
-import 'event_form_page.dart';
+import 'event_create_page.dart';
 
 void main() {
   runApp(const EventApp());
@@ -185,63 +185,70 @@ class _EventListPageState extends State<EventListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToCreateEventPage,
+        tooltip: 'Create Event',
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: AnimatedBottomNavigationBar(
         currentIndex: 1,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            EventSearchBar(
-              onSearch: (query) {
-                setState(() {
-                  searchQuery = query;
-                });
-                filterEvents();
-              },
-              onCategoryChanged: (category) {
-                setState(() {
-                  selectedCategory = category;
-                });
-                filterEvents();
-              },
-              searchQuery: searchQuery,
-              selectedCategory: selectedCategory,
-            ),
-            const SizedBox(height: 16.0),
-            isLoading
-                ? const CircularProgressIndicator()
-                : filteredEvents.isEmpty
-                    ? const Text(
-                        'No events found',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
+      body: RefreshIndicator(
+        onRefresh: fetchEvents,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              EventSearchBar(
+                onSearch: (query) {
+                  setState(() {
+                    searchQuery = query;
+                  });
+                  filterEvents();
+                },
+                onCategoryChanged: (category) {
+                  setState(() {
+                    selectedCategory = category;
+                  });
+                  filterEvents();
+                },
+                searchQuery: searchQuery,
+                selectedCategory: selectedCategory,
+              ),
+              const SizedBox(height: 16.0),
+              isLoading
+                  ? const CircularProgressIndicator()
+                  : filteredEvents.isEmpty
+                      ? const Text(
+                          'No events found',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                        )
+                      : GridView.builder(
+                          shrinkWrap: true,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 8,
+                            crossAxisSpacing: 8,
+                            childAspectRatio: 1,
+                          ),
+                          itemCount: filteredEvents.length,
+                          itemBuilder: (context, index) {
+                            final event = filteredEvents[index];
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: EventCard(
+                                event: event,
+                                isAdmin: isAdmin,
+                                onEdit: _navigateToEditEventPage,
+                                onDelete: _showDeleteConfirmation,
+                              ),
+                            );
+                          },
                         ),
-                      )
-                    : GridView.builder(
-                        shrinkWrap: true,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 8,
-                          crossAxisSpacing: 8,
-                          childAspectRatio: 1,
-                        ),
-                        itemCount: filteredEvents.length,
-                        itemBuilder: (context, index) {
-                          final event = filteredEvents[index];
-                          return EventCard(
-                            event: event,
-                            isAdmin: isAdmin,
-                            onEdit: _navigateToEditEventPage,
-                            onDelete: _showDeleteConfirmation,
-                          );
-                        },
-                      ),
-          ],
+            ],
+          ),
         ),
       ),
     );
