@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/pages/forum/reply_detail.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -45,7 +46,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/post/${widget.postId}/'),
+        Uri.parse('$fetchUrl/api/yogforum/post/${widget.postId}/'),
       );
 
       if (response.statusCode == 200) {
@@ -77,8 +78,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2:8000/api/yogforum/like_post/${widget.postId}/'),
+        Uri.parse('$fetchUrl/api/yogforum/like_post/${widget.postId}/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -108,8 +108,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2:8000/api/yogforum/dislike_post/${widget.postId}/'),
+        Uri.parse('$fetchUrl/api/yogforum/dislike_post/${widget.postId}/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -139,7 +138,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/like_reply/$replyId/'),
+        Uri.parse('$fetchUrl/api/yogforum/like_reply/$replyId/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -165,7 +164,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/dislike_reply/$replyId/'),
+        Uri.parse('$fetchUrl/api/yogforum/dislike_reply/$replyId/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -191,8 +190,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2:8000/api/yogforum/edit/${forumPost!['id']}/'),
+        Uri.parse('$fetchUrl/api/yogforum/edit/${forumPost!['id']}/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
@@ -233,8 +231,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
       }
 
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2:8000/api/yogforum/post/${forumPost!['id']}/add_reply/'),
+        Uri.parse('$fetchUrl/api/yogforum/post/${forumPost!['id']}/add_reply/'),
         body: jsonEncode(body),
         headers: {'Content-Type': 'application/json'},
       );
@@ -255,8 +252,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2:8000/api/yogforum/post/${forumPost!['id']}/delete/'),
+        Uri.parse('$fetchUrl/api/yogforum/post/${forumPost!['id']}/delete/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -285,7 +281,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
     if (username == null || username!.isEmpty) return;
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/yogforum/reply/$replyId/delete/'),
+        Uri.parse('$fetchUrl/api/yogforum/reply/$replyId/delete/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
@@ -311,126 +307,129 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
   }
 
   Widget buildReplies(List<Map<String, dynamic>> replyList, {int depth = 0}) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: replyList.length,
-      itemBuilder: (context, index) {
-        final reply = replyList[index];
-        final isReplyAuthor = username != null && reply['user'] == username;
+    return SingleChildScrollView(
+      child: Column(
+        children: replyList.map((reply) {
+          final isReplyAuthor = username != null && reply['user'] == username;
 
-        return Padding(
-          padding: EdgeInsets.only(left: depth * 16.0, bottom: 8.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: depth % 2 == 0 ? Colors.grey[100] : Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            margin: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ListTile(
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 4.0),
-                    child: Text(
-                      reply['content'],
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w500),
+          return Padding(
+            padding: EdgeInsets.only(left: depth * 16.0, bottom: 8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: depth % 2 == 0 ? Colors.grey[100] : Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              margin: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    title: Padding(
+                      padding: const EdgeInsets.only(bottom: 4.0),
+                      child: Text(
+                        reply['content'],
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
                     ),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '– ${reply['user']}',
-                        style:
-                            const TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                      if (reply['replies'] != null &&
-                          reply['replies'].isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: buildReplies(
-                              List<Map<String, dynamic>>.from(reply['replies']),
-                              depth: depth + 1),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '– ${reply['user']}',
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.grey),
                         ),
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon:
-                            const Icon(Icons.open_in_new, color: Colors.green),
-                        tooltip: 'View this Reply as a Post',
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ReplyDetailPage(replyId: reply['id']),
-                            ),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.thumb_up, color: Colors.blue),
-                        onPressed: () {
-                          likeReply(reply['id']);
-                        },
-                      ),
-                      Text('${reply['total_likes'] ?? 0}'),
-                      IconButton(
-                        icon: const Icon(Icons.thumb_down, color: Colors.red),
-                        onPressed: () {
-                          dislikeReply(reply['id']);
-                        },
-                      ),
-                      Text('${reply['total_dislikes'] ?? 0}'),
-                      IconButton(
-                        icon: const Icon(Icons.reply, color: Colors.blue),
-                        onPressed: () {
-                          showReplyDialog(reply['id']);
-                        },
-                      ),
-                      if (isReplyAuthor)
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (ctx) {
-                                return AlertDialog(
-                                  title: const Text('Delete Reply'),
-                                  content: const Text(
-                                      'Are you sure you want to delete this reply?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(ctx),
-                                      child: const Text('Cancel'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(ctx);
-                                        deleteReply(reply['id']);
-                                      },
-                                      child: const Text('Delete'),
-                                    )
-                                  ],
+                        if (reply['replies'] != null &&
+                            reply['replies'].isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: buildReplies(
+                                List<Map<String, dynamic>>.from(
+                                    reply['replies']),
+                                depth: depth + 1),
+                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.open_in_new,
+                                  color: Colors.green, size: 20),
+                              tooltip: 'View this Reply as a Post',
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ReplyDetailPage(replyId: reply['id']),
+                                  ),
                                 );
                               },
-                            );
-                          },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.thumb_up,
+                                  color: Colors.blue, size: 20),
+                              onPressed: () {
+                                likeReply(reply['id']);
+                              },
+                            ),
+                            Text('${reply['total_likes'] ?? 0}'),
+                            IconButton(
+                              icon: const Icon(Icons.thumb_down,
+                                  color: Colors.red, size: 20),
+                              onPressed: () {
+                                dislikeReply(reply['id']);
+                              },
+                            ),
+                            Text('${reply['total_dislikes'] ?? 0}'),
+                            IconButton(
+                              icon: const Icon(Icons.reply,
+                                  color: Colors.blue, size: 20),
+                              onPressed: () {
+                                showReplyDialog(reply['id']);
+                              },
+                            ),
+                            if (isReplyAuthor)
+                              IconButton(
+                                icon: const Icon(Icons.delete,
+                                    color: Colors.red, size: 20),
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) {
+                                      return AlertDialog(
+                                        title: const Text('Delete Reply'),
+                                        content: const Text(
+                                            'Are you sure you want to delete this reply?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(ctx),
+                                            child: const Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(ctx);
+                                              deleteReply(reply['id']);
+                                            },
+                                            child: const Text('Delete'),
+                                          )
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                          ],
                         ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -442,10 +441,20 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(replyToId == null ? 'Reply to Post' : 'Reply to Comment'),
-          content: TextField(
-            controller: replyController,
-            maxLines: 3,
-            decoration: const InputDecoration(hintText: 'Enter your reply...'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: replyController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your reply...',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -454,11 +463,18 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
               },
               child: const Text('Cancel'),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 postReply(replyController.text, replyToId);
                 Navigator.pop(context);
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               child: const Text('Reply'),
             ),
           ],
@@ -479,6 +495,7 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
           title: const Text('Edit Post'),
           content: SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
                   controller: titleController,
@@ -659,16 +676,18 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                                   onPressed: () {
                                     showReplyDialog(null);
                                   },
-                                  icon: const Icon(Icons.reply, size: 20),
-                                  label: const Text('Reply to this Post'),
+                                  icon: const Icon(Icons.reply,
+                                      size: 20, color: Colors.white),
+                                  label: const Text('Reply to this Post',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.white)),
                                   style: ElevatedButton.styleFrom(
+                                    minimumSize:
+                                        const Size(double.infinity, 50),
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 30, vertical: 15),
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                                        vertical: 16.0),
                                   ),
                                 ),
                               ],
@@ -683,9 +702,14 @@ class _ForumDetailPageState extends State<ForumDetailPage> {
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
-                      replies.isEmpty
-                          ? const Text('No replies yet.')
-                          : buildReplies(replies),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                            minHeight: 0,
+                            maxHeight: 500), // Adjust maxHeight as needed
+                        child: replies.isEmpty
+                            ? const Text('No replies yet.')
+                            : buildReplies(replies),
+                      ),
                     ],
                   ),
                 ),

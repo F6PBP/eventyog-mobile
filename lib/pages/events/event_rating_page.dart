@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -33,8 +34,8 @@ class _RatingPageState extends State<RatingPage> {
     final request = context.read<CookieRequest>();
 
     try {
-      final response = await request
-          .get('http://10.0.2.2:8000/api/yogevent/rate/${widget.event_id}/');
+      final response =
+          await request.get('$fetchUrl/api/yogevent/rate/${widget.event_id}/');
 
       if (mounted) {
         setState(() {
@@ -78,7 +79,7 @@ class _RatingPageState extends State<RatingPage> {
       };
 
       final response = await request.post(
-        'http://10.0.2.2:8000/api/yogevent/rate/${widget.event_id}/',
+        '$fetchUrl/api/yogevent/rate/${widget.event_id}/',
         formData,
       );
 

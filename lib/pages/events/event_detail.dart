@@ -1,9 +1,11 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:eventyog_mobile/models/EventModel.dart';
 import 'package:eventyog_mobile/pages/events/event_rating_page.dart';
+import 'package:eventyog_mobile/pages/merchandise/merchandise_list.dart';
 
 class EventDetailPage extends StatefulWidget {
   final Event event;
@@ -75,10 +77,12 @@ class _EventDetailPageState extends State<EventDetailPage> {
   Future<void> _fetchRatings() async {
     final request = context.read<CookieRequest>();
     try {
-      final response = await request
-          .get('http://10.0.2.2:8000/api/yogevent/rate/${widget.event.pk}/');
+      final response =
+          await request.get('$fetchUrl/api/yogevent/rate/${widget.event.pk}/');
 
       if (mounted) {
+        print('Response received:');
+        print(response);
         setState(() {
           _isLoadingRatings = false;
           _averageRating = (response['average_rating'] ?? 0).toDouble();
@@ -114,7 +118,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
     try {
       final response = await request
-          .get('http://10.0.2.2:8000/api/yogevent/tickets/${widget.event.pk}/');
+          .get('$fetchUrl/api/yogevent/tickets/${widget.event.pk}/');
 
       if (mounted) {
         setState(() {
@@ -157,8 +161,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
     try {
       print(widget.event.pk);
       print('Fetching user ticket status...');
-      final response = await request.get(
-          'http://10.0.2.2:8000/api/yogevent/user-ticket/${widget.event.pk}/');
+      final response = await request
+          .get('$fetchUrl/api/yogevent/user-ticket/${widget.event.pk}/');
 
       print('Response received:');
       print(response);
@@ -191,8 +195,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
           'Trying to call ${isFree ? "book-free-ticket" : "buy-ticket-flutter"} endpoint');
       final response = await request.post(
         isFree
-            ? 'http://10.0.2.2:8000/api/yogevent/book-free-ticket/'
-            : 'http://10.0.2.2:8000/api/yogevent/buy-ticket-flutter/',
+            ? '$fetchUrl/api/yogevent/book-free-ticket/'
+            : '$fetchUrl/api/yogevent/buy-ticket-flutter/',
         {
           'ticket_id': ticketId,
         },
@@ -252,7 +256,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   Future<void> _deletePaidTicket() async {
-    print('\n===== DEBUG _deletePaidTicket =====');
     final request = context.read<CookieRequest>();
 
     // Pastikan tiket berbayar memiliki ticket_id yang valid
@@ -270,7 +273,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
     try {
       print('Attempting to delete paid ticket with ID: $ticketId');
       final response = await request.post(
-        'http://10.0.2.2:8000/api/yogevent/delete-user-ticket/',
+        '$fetchUrl/api/yogevent/delete-user-ticket/',
         {
           'ticket_id': ticketId.toString(),
         },
@@ -327,7 +330,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
     try {
       print('Attempting to delete free ticket with ID: $ticketId');
       final response = await request.post(
-        'http://10.0.2.2:8000/api/yogevent/cancel-free-booking/',
+        '$fetchUrl/api/yogevent/cancel-free-booking/',
         {
           'ticket_id': ticketId.toString(),
         },
@@ -632,13 +635,19 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         children: [
                           CircleAvatar(
                             backgroundColor: Colors.blue.shade100,
-                            child: Text(
-                              latestRating['username'][0].toUpperCase(),
-                              style: TextStyle(
-                                color: Colors.blue.shade900,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            backgroundImage: latestRating
+                                    .containsKey('profile_picture')
+                                ? NetworkImage(latestRating['profile_picture'])
+                                : null,
+                            child: latestRating.containsKey('profile_picture')
+                                ? null
+                                : Text(
+                                    latestRating['username'][0].toUpperCase(),
+                                    style: TextStyle(
+                                      color: Colors.blue.shade900,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                           ),
                           SizedBox(width: 12),
                           Expanded(
@@ -765,6 +774,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   SizedBox(height: 16),
                   _buildUserTicketSection(),
                   SizedBox(height: 16),
+
+                  // Merchandise Section
+                  MerchandiseList(eventId: widget.event.pk),
+                  const SizedBox(height: 16),
 
                   // Reviews Section Header
                   const Text(

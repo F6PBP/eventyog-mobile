@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/pages/home/index.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -54,7 +55,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       String biodata) async {
     try {
       // Prepare multipart request
-      final uri = Uri.parse("http://10.0.2.2:8000/api/auth/onboarding/");
+      final uri = Uri.parse("$fetchUrl/api/auth/onboarding/");
       final multipartRequest = http.MultipartRequest('POST', uri)
         ..headers.addAll(await request.headers)
         ..fields['name'] = fullName

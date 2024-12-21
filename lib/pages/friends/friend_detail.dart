@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/pages/friends/friend_list.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
@@ -31,11 +32,9 @@ class FriendDetailPage extends StatelessWidget {
     Future<void> addFriend(CookieRequest request) async {
       try {
         final response = await request.postJson(
-          "http://10.0.2.2:8000/api/friend/add/$id",
+          "$fetchUrl/api/friend/add/$id",
           jsonEncode(<String, String>{}),
         );
-
-        print(response);
 
         if (response['status'] == true) {
           Navigator.pushReplacement(context,
@@ -68,7 +67,7 @@ class FriendDetailPage extends StatelessWidget {
     Future<void> removeFriend(CookieRequest request) async {
       try {
         final response = await request.postJson(
-          "http://10.0.2.2:8000/api/friend/remove/$id",
+          "$fetchUrl/api/friend/remove/$id",
           jsonEncode(<String, String>{}),
         );
 
@@ -82,8 +81,6 @@ class FriendDetailPage extends StatelessWidget {
               backgroundColor: Colors.green,
             ),
           );
-
-          // Replace page with the previous page
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -109,67 +106,54 @@ class FriendDetailPage extends StatelessWidget {
       bottomNavigationBar: const AnimatedBottomNavigationBar(
         currentIndex: 3,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: Card(
-                elevation: 4.0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: CircleAvatar(
-                          radius: 50,
-                          child: Text(
-                            name[0],
-                            style: TextStyle(fontSize: 40),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      _buildDetailItem(Icons.person, 'Name', name),
-                      _buildDetailItem(Icons.email, 'Email', email),
-                      _buildDetailItem(Icons.phone, 'Phone', phone),
-                      _buildDetailItem(Icons.home, 'Address', address),
-                    ],
-                  ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 50,
+                child: Text(
+                  name[0],
+                  style: TextStyle(fontSize: 40),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            isFriend
-                ? ElevatedButton.icon(
-                    onPressed: () {
-                      removeFriend(request);
-                    },
-                    icon: Icon(Icons.person_remove),
-                    label: Text("Remove Friend"),
-                    style: ElevatedButton.styleFrom(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      textStyle: TextStyle(fontSize: 16),
+              const SizedBox(height: 24.0),
+              _buildDetailItem(Icons.person, 'Name', name),
+              _buildDetailItem(Icons.email, 'Email', email),
+              _buildDetailItem(Icons.phone, 'Phone', phone),
+              _buildDetailItem(Icons.home, 'Address', address),
+              const SizedBox(height: 24.0),
+              isFriend
+                  ? ElevatedButton.icon(
+                      onPressed: () {
+                        removeFriend(request);
+                      },
+                      icon: Icon(Icons.person_remove, color: Colors.white),
+                      label: Text("Remove Friend",
+                          style: TextStyle(fontSize: 16, color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      ),
+                    )
+                  : ElevatedButton.icon(
+                      onPressed: () {
+                        addFriend(request);
+                      },
+                      icon: Icon(Icons.person_add, color: Colors.white),
+                      label: Text("Add Friend",
+                          style: TextStyle(fontSize: 16, color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      ),
                     ),
-                  )
-                : ElevatedButton.icon(
-                    onPressed: () {
-                      addFriend(request);
-                    },
-                    icon: Icon(Icons.person_add),
-                    label: Text("Add Friend"),
-                    style: ElevatedButton.styleFrom(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      textStyle: TextStyle(fontSize: 16),
-                    ),
-                  ),
-          ],
+            ],
+          ),
         ),
       ),
     );

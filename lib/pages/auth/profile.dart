@@ -5,6 +5,7 @@ import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:eventyog_mobile/const.dart';
 
 void main() {
   runApp(const ProfileApp());
@@ -37,8 +38,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   Future<ProfileModel> fetchUserProfile(CookieRequest request) async {
-    final response =
-        await request.get("http://10.0.2.2:8000/api/auth/profile/");
+    final response = await request.get("$fetchUrl/api/auth/profile/");
     return ProfileModel.fromJson(response);
   }
 
@@ -101,17 +101,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 20),
                   CircleAvatar(
                     radius: 60,
-                    backgroundImage: profile.data.imageUrl != null
-                        ? NetworkImage(profile.data.imageUrl!)
-                        : null,
+                    backgroundImage: NetworkImage(profile.data.imageUrl!),
                     backgroundColor: Colors.grey.shade300,
-                    child: profile.data.imageUrl == null
-                        ? const Icon(
-                            Icons.person,
-                            size: 60,
-                            color: Colors.grey,
-                          )
-                        : null,
                   ),
                   const SizedBox(height: 20),
                   Text(
@@ -185,7 +176,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 30, vertical: 15),
-                          backgroundColor: Colors.blue,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -196,7 +188,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ElevatedButton.icon(
                         onPressed: () async {
                           final response = await request
-                              .logout("http://10.0.2.2:8000/api/auth/logout/");
+                              .logout("$fetchUrl/api/auth/logout/");
                           String message = response["message"];
                           if (context.mounted) {
                             if (response['status']) {
