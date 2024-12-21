@@ -1,6 +1,7 @@
 import 'package:eventyog_mobile/models/ProfileModel.dart';
 import 'package:eventyog_mobile/pages/auth/edit_profile.dart';
 import 'package:eventyog_mobile/pages/auth/login.dart';
+import 'package:eventyog_mobile/pages/admin/user_list.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -211,13 +212,64 @@ class _UserDetailPageState extends State<UserDetailPage> {
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
                       onPressed: () async {
-                        
+                        // Step 1: Confirm Deletion
+                        final confirmDelete = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('Confirm Deletion'),
+                              content: const Text(
+                                  'Are you sure you want to delete your account? This action cannot be undone.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(true),
+                                  child: const Text('Delete'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        if (confirmDelete != true) return;
+
+                        // Step 2: Perform Delete API Call
+                        try {
+                          // Replace with your actual delete API endpoint and logic
+                          final encodedUsername = Uri.encodeComponent(widget.username);
+                          final response = await request.get("http://127.0.0.1:8000/api/admin/delete_user/$encodedUsername");
+
+                          // Step 3: Handle Response
+                          if (response['status_code'] == 200) {
+                            // Assume successful deletion
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Account deleted successfully.')),
+                            );
+
+                            // Step 4: Log the user out or redirect
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AdminUserListPage()),
+                              (route) => false,
+                            );
+                          } else {
+                            throw Exception('Failed to delete account: ${response}');
+                          }
+                        } catch (error) {
+                          // Handle error
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error deleting account: $error')),
+                          );
+                          print('Error delete user profile: $error');
+                        }
                       },
                       icon: const Icon(Icons.delete),
                       label: const Text('Delete Account'),
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 15),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
