@@ -160,6 +160,9 @@ class _EditMerchandiseState extends State<EditMerchandise> {
                     if (price < 1) {
                       return 'Price must be at least 1';
                     }
+                    if (price >= 100000000) {
+                      return 'Price must be less than 100000000';
+                    }
                     return null;
                   },
                 ),
@@ -203,6 +206,9 @@ class _EditMerchandiseState extends State<EditMerchandise> {
                     }
                     if (quantity < 1) {
                       return 'Quantity must be at least 1';
+                    }
+                    if (quantity >= 100000000) {
+                      return 'Quantity must be less than 100000000';
                     }
                     return null;
                   },
