@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -43,7 +44,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request
-          .get("http://127.0.0.1:8000/api/merchandise/show/${widget.eventId}/");
+          .get("$fetchUrl/api/merchandise/show/${widget.eventId}/");
 
       if (response['status'] == 'success') {
         setState(() {
@@ -67,7 +68,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
   }
 
   Future<void> deleteMerchandise(int id) async {
-    final url = "http://127.0.0.1:8000/api/merchandise/delete/$id/";
+    final url = "$fetchUrl/api/merchandise/delete/$id/";
     try {
       final response = await http.delete(
         Uri.parse(url),
@@ -182,7 +183,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.postJson(
-        "http://127.0.0.1:8000/api/merchandise/add-to-cart/",
+        "$fetchUrl/api/merchandise/add-to-cart/",
         jsonEncode({
           'items': [
             {
@@ -218,13 +219,15 @@ class _MerchandiseListState extends State<MerchandiseList> {
   void _restoreCartState() async {
     final request = context.read<CookieRequest>();
     try {
-      final response = await request.get("http://127.0.0.1:8000/api/cart/get_cart_data/");
+      final response = await request.get("$fetchUrl/api/cart/get_cart_data/");
 
       if (response.containsKey('cart_events') &&
           response.containsKey('cart_merch')) {
         final cartData = response['cart_merch'];
 
-        final restoredCartItems = {for (var item in cartData) item['name']: item['quantity']};
+        final restoredCartItems = {
+          for (var item in cartData) item['name']: item['quantity']
+        };
         final restoredItemAmount = List<int>.filled(merchandise.length, 0);
 
         for (var i = 0; i < merchandise.length; i++) {
@@ -349,7 +352,8 @@ class _MerchandiseListState extends State<MerchandiseList> {
                                 _increaseBoughtQuantity(index),
                             decreaseBoughtQuantity: () =>
                                 _decreaseBoughtQuantity(index),
-                            itemAmount: _itemAmount[index], // Pass the item amount
+                            itemAmount:
+                                _itemAmount[index], // Pass the item amount
                           ),
                           SizedBox(height: 20),
                         ],

@@ -61,6 +61,10 @@ class _EventFormPageState extends State<EventFormPage> {
       final request = context.read<CookieRequest>();
       final dio = Dio();
 
+      if (title.isEmpty || category == null || startTime == null) {
+        throw Exception('Please fill in all required fields');
+      }
+
       Map<String, dynamic> eventData = {
         'title': title,
         'description': description,
@@ -69,7 +73,8 @@ class _EventFormPageState extends State<EventFormPage> {
       };
 
       if (endTime != null) {
-        if (endTime!.isBefore(startTime!)) {
+        if (endTime!.isBefore(startTime!) ||
+            endTime!.isAtSameMomentAs(startTime!)) {
           throw Exception('Event ends before it starts');
         }
         eventData['end_time'] = endTime!.toIso8601String();
@@ -112,6 +117,32 @@ class _EventFormPageState extends State<EventFormPage> {
       } else {
         throw Exception(response.data['error'] ?? 'Failed to create event');
       }
+    } on DioException catch (e) {
+      String errorMessage;
+
+      if (e.response != null) {
+        // Handle specific HTTP status codes
+        switch (e.response?.statusCode) {
+          case 400:
+            errorMessage = e.response?.data['error'] ?? 'Invalid input data';
+            break;
+          case 405:
+            errorMessage = 'Invalid request method';
+            break;
+          case 500:
+            errorMessage = 'Server error occurred';
+            break;
+          default:
+            errorMessage = e.response?.data['error'] ?? 'An error occurred';
+        }
+      } else if (e.type == DioExceptionType.connectionTimeout) {
+        errorMessage = 'Connection timed out';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage = 'No internet connection';
+      } else {
+        errorMessage = 'An unexpected error occurred';
+      }
+      throw Exception(errorMessage);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
