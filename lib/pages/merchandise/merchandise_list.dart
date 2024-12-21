@@ -9,9 +9,9 @@ import 'create_merchandise.dart';
 import 'edit_merchandise.dart';
 
 class MerchandiseList extends StatefulWidget {
-  final String eventId; // Add eventId parameter
+  final String eventId;
 
-  MerchandiseList({required this.eventId}); // Update constructor
+  MerchandiseList({required this.eventId});
 
   @override
   _MerchandiseListState createState() => _MerchandiseListState();
@@ -20,8 +20,9 @@ class MerchandiseList extends StatefulWidget {
 class _MerchandiseListState extends State<MerchandiseList> {
   List<dynamic> merchandise = [];
   bool isAdmin = false;
-  bool isLoading = true; // Add loading state
-  String errorMessage = ''; // Add error message state
+  bool isLoading = true;
+  String errorMessage = '';
+  List<int> _itemAmount = [];
 
   @override
   void initState() {
@@ -32,13 +33,17 @@ class _MerchandiseListState extends State<MerchandiseList> {
   Future<void> fetchMerchandise() async {
     final request = context.read<CookieRequest>();
     try {
-      final response = await request.get("http://10.0.2.2:8000/api/merchandise/show/${widget.eventId}/");
-      
+      final response = await request
+          .get("http://10.0.2.2:8000/api/merchandise/show/${widget.eventId}/");
+
       if (response['status'] == 'success') {
         setState(() {
           merchandise = response['data'];
-          isAdmin = response['is_admin'] ?? false; // Ensure isAdmin is set to false if not provided
+          isAdmin = response['is_admin'] ?? false;
           isLoading = false;
+
+          // Initialize _itemAmount to match the length of the merchandise list
+          _itemAmount = List<int>.filled(merchandise.length, 0);
         });
       } else {
         throw Exception('Failed to load merchandise');
@@ -72,7 +77,6 @@ class _MerchandiseListState extends State<MerchandiseList> {
         throw Exception('Failed to delete merchandise');
       }
     } catch (e) {
-      // Handle error appropriately
       print('Error deleting merchandise: $e');
     }
   }
@@ -83,7 +87,7 @@ class _MerchandiseListState extends State<MerchandiseList> {
       MaterialPageRoute(
         builder: (context) => CreateMerchandise(
           onCreate: fetchMerchandise,
-          eventId: widget.eventId, // Pass eventId to CreateMerchandise
+          eventId: widget.eventId,
         ),
       ),
     );
@@ -100,19 +104,59 @@ class _MerchandiseListState extends State<MerchandiseList> {
           imageUrl: merchandise['image_url'],
           id: merchandise['pk'],
           onEdit: fetchMerchandise,
-          quantity: merchandise['quantity'].toString(), // Pass quantity parameter
+          quantity: merchandise['quantity'].toString(),
         ),
       ),
     );
 
     if (result != null) {
       setState(() {
-        final index = this.merchandise.indexWhere((item) => item['pk'] == result['id']);
+        final index =
+            this.merchandise.indexWhere((item) => item['pk'] == result['id']);
         if (index != -1) {
           this.merchandise[index] = result;
         }
       });
     }
+  }
+
+  void __increaseBoughtQuantity(int index) {
+    if (index < 0 || index >= _itemAmount.length) {
+      debugPrint("Invalid index: $index");
+      return;
+    }
+
+    setState(() {
+      if (_itemAmount[index] < merchandise[index]['quantity']) {
+        _itemAmount[index]++;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Cannot add more than available quantity'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    });
+  }
+
+  void __decreaseBoughtQuantity(int index) {
+    if (index < 0 || index >= _itemAmount.length) {
+      debugPrint("Invalid index: $index");
+      return;
+    }
+    setState(() {
+      if (_itemAmount[index] > 0) {
+        _itemAmount[index]--;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('The minimum number for payment is 1'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    });
   }
 
   @override
@@ -137,11 +181,11 @@ class _MerchandiseListState extends State<MerchandiseList> {
               TextButton(
                 onPressed: _navigateToCreateMerchandise,
                 style: TextButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor, // Use the same blue color
+                  backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
-                child: Row(
+                child: const Row(
                   children: [
                     Icon(Icons.add, color: Colors.white),
                     SizedBox(width: 4),
@@ -152,51 +196,76 @@ class _MerchandiseListState extends State<MerchandiseList> {
           ],
         ),
         isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : errorMessage.isNotEmpty
                 ? Center(child: Text(errorMessage))
                 : ListView.builder(
-                    shrinkWrap: true, // Add this line
-                    physics: NeverScrollableScrollPhysics(), // Add this line
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: merchandise.length,
                     itemBuilder: (context, index) {
-                      return MerchandiseCard(
-                        imageUrl: merchandise[index]['image_url'] ?? '',
-                        quantity: merchandise[index]['quantity'] ?? 0,
-                        name: merchandise[index]['name'] ?? 'Unknown',
-                        description: merchandise[index]['description'] ?? 'No description',
-                        price: merchandise[index]['price']?.toString() ?? '0.0',
-                        isAdmin: isAdmin,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => MerchandiseDetail(
-                                id: merchandise[index]['pk'],
-                                imageUrl: merchandise[index]['image_url'] ?? '',
-                                name: merchandise[index]['name'] ?? 'Unknown',
-                                description: merchandise[index]['description'] ?? 'No description',
-                                price: merchandise[index]['price']?.toString() ?? '0.0',
-                                isAdmin: isAdmin,
-                                onEdit: fetchMerchandise, // Pass callback
-                                quantity: merchandise[index]['quantity']?.toString() ?? '0', // Pass quantity parameter
-                              ),
-                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                const begin = Offset(1.0, 0.0);
-                                const end = Offset.zero;
-                                const curve = Curves.ease;
+                      dynamic merchandiseItem = merchandise[index];
+                      return Column(
+                        children: [
+                          MerchandiseCard(
+                            imageUrl: merchandiseItem['image_url'] ?? '',
+                            quantity: merchandiseItem['quantity'] ?? 0,
+                            name: merchandiseItem['name'] ?? 'Unknown',
+                            description: merchandiseItem['description'] ??
+                                'No description',
+                            price:
+                                merchandiseItem['price']?.toString() ?? '0.0',
+                            isAdmin: isAdmin,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation,
+                                          secondaryAnimation) =>
+                                      MerchandiseDetail(
+                                    id: merchandiseItem['pk'],
+                                    imageUrl:
+                                        merchandiseItem['image_url'] ?? '',
+                                    name: merchandiseItem['name'] ?? 'Unknown',
+                                    description:
+                                        merchandiseItem['description'] ??
+                                            'No description',
+                                    price:
+                                        merchandiseItem['price']?.toString() ??
+                                            '0.0',
+                                    isAdmin: isAdmin,
+                                    onEdit: fetchMerchandise,
+                                    quantity: merchandiseItem['quantity']
+                                            ?.toString() ??
+                                        '0',
+                                  ),
+                                  transitionsBuilder: (context, animation,
+                                      secondaryAnimation, child) {
+                                    const begin = Offset(1.0, 0.0);
+                                    const end = Offset.zero;
+                                    const curve = Curves.ease;
 
-                                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                    var tween = Tween(begin: begin, end: end)
+                                        .chain(CurveTween(curve: curve));
 
-                                return SlideTransition(
-                                  position: animation.drive(tween),
-                                  child: child,
-                                );
-                              },
-                            ),
-                          );
-                        },
-                        onDelete: isAdmin ? () => deleteMerchandise(merchandise[index]['pk']) : null,
+                                    return SlideTransition(
+                                      position: animation.drive(tween),
+                                      child: child,
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                            onDelete: isAdmin
+                                ? () => deleteMerchandise(merchandiseItem['pk'])
+                                : null,
+                            increaseBoughtQuantity: () =>
+                                __increaseBoughtQuantity(index),
+                            decreaseBoughtQuantity: () =>
+                                __decreaseBoughtQuantity(index),
+                          ),
+                          SizedBox(height: 20),
+                        ],
                       );
                     },
                   ),

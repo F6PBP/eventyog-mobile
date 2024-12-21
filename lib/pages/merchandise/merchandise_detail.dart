@@ -9,9 +9,9 @@ class MerchandiseDetail extends StatefulWidget {
   final String description;
   final String price;
   final bool isAdmin;
-  final int id; // Add id parameter
-  final VoidCallback onEdit; // Add callback for refetching
-  final String quantity; // Add quantity parameter
+  final int id;
+  final VoidCallback onEdit;
+  final String quantity;
 
   MerchandiseDetail({
     required this.imageUrl,
@@ -19,9 +19,9 @@ class MerchandiseDetail extends StatefulWidget {
     required this.description,
     required this.price,
     required this.isAdmin,
-    required this.id, // Initialize id
-    required this.onEdit, // Initialize callback
-    required this.quantity, // Initialize quantity
+    required this.id,
+    required this.onEdit,
+    required this.quantity,
   });
 
   @override
@@ -54,9 +54,9 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
           description: description,
           price: price,
           imageUrl: imageUrl,
-          id: widget.id, // Pass id parameter
-          onEdit: widget.onEdit, // Pass callback
-          quantity: widget.quantity, // Pass quantity parameter
+          id: widget.id,
+          onEdit: widget.onEdit,
+          quantity: widget.quantity,
         ),
       ),
     );
@@ -67,8 +67,34 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
         description = result['description'];
         price = result['price'];
         imageUrl = result['imageUrl'];
-        quantity = result['quantity']; // Update quantity
+        quantity = result['quantity'];
       });
+    }
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Confirm Delete'),
+          content: Text('Are you sure you want to delete this merchandise?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await deleteMerchandise();
     }
   }
 
@@ -85,8 +111,8 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         if (responseBody['status'] == 'success') {
-          widget.onEdit(); // Refetch merchandise list
-          Navigator.pop(context); // Go back to the previous screen
+          widget.onEdit();
+          Navigator.pop(context);
         } else {
           throw Exception('Failed to delete merchandise');
         }
@@ -94,7 +120,6 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
         throw Exception('Failed to delete merchandise');
       }
     } catch (e) {
-      // Handle error appropriately
       print('Error deleting merchandise: $e');
     }
   }
@@ -104,43 +129,55 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
     return Scaffold(
       appBar: AppBar(
         title: Text(name),
-        actions: null, // Remove the pencil icon button
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          return SingleChildScrollView( // Make content scrollable
-            padding: const EdgeInsets.all(24.0), // Add padding to the whole page content
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0), // Add padding around the image
-                    child: Image.network(
-                      imageUrl,
-                      height: constraints.maxWidth > 600 ? 350 : 200, // Adjust height based on screen width
-                      width: constraints.maxWidth > 600 ? 400 : constraints.maxWidth * 0.9, // Adjust width for a larger rectangle
-                      fit: BoxFit.cover,
+                    padding: const EdgeInsets.all(8.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16.0),
+                      child: Image.network(
+                        imageUrl,
+                        height: constraints.maxWidth > 600 ? 350 : 200,
+                        width: constraints.maxWidth > 600
+                            ? 400
+                            : constraints.maxWidth * 0.9,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
                 SizedBox(height: 16),
                 Text(
                   name,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 8),
                 Text(
                   description,
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                 ),
                 SizedBox(height: 16),
                 Text(
                   'Rp$price',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Quantity: $quantity',
+                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                 ),
                 if (widget.isAdmin) ...[
-                  SizedBox(height: 16),
+                  SizedBox(height: 24),
                   constraints.maxWidth > 400
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -149,16 +186,15 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
                               onPressed: _editMerchandise,
                               icon: Icon(Icons.edit),
                               label: Text('Edit'),
-                              // Original color for edit button
                             ),
                             SizedBox(width: 8),
                             ElevatedButton.icon(
-                              onPressed: deleteMerchandise, // Call delete function
+                              onPressed: _confirmDelete,
                               icon: Icon(Icons.delete),
                               label: Text('Delete'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).primaryColor, // Same blue color as edit button text
-                                foregroundColor: Colors.white, // White text color
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
                               ),
                             ),
                           ],
@@ -168,18 +204,25 @@ class _MerchandiseDetailState extends State<MerchandiseDetail> {
                           children: [
                             ElevatedButton.icon(
                               onPressed: _editMerchandise,
-                              icon: Icon(Icons.edit),
+                              icon: Icon(Icons.edit,
+                                  size: 18, color: Colors.white),
                               label: Text('Edit'),
-                              // Original color for edit button
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: const Size(double.infinity, 50),
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16.0),
+                              ),
                             ),
                             SizedBox(height: 8),
                             ElevatedButton.icon(
-                              onPressed: deleteMerchandise, // Call delete function
+                              onPressed: _confirmDelete,
                               icon: Icon(Icons.delete),
                               label: Text('Delete'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).primaryColor, // Same blue color as edit button text
-                                foregroundColor: Colors.white, // White text color
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
                               ),
                             ),
                           ],
