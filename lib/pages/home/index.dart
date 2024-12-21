@@ -1,6 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/models/EventModel.dart';
+import 'package:eventyog_mobile/pages/cart/MyCart.dart';
 import 'package:eventyog_mobile/pages/events/event_list_page.dart';
 import 'package:eventyog_mobile/pages/home/widgets/event_card.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
@@ -94,7 +95,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header Section
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
               Row(
                 children: [
                   Expanded(
@@ -131,7 +132,8 @@ class _HomePageState extends State<HomePage> {
               SectionHeader(
                 title: 'Featured Events',
                 onTap: () {
-                  // TODO: Navigate to all featured events page
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => EventListPage()));
                 },
               ),
               const SizedBox(height: 10),
@@ -193,8 +195,8 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => EventListPage()));
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => MyCartPage()));
         },
         child: const Icon(Icons.shopping_cart),
       ),
