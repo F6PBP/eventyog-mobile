@@ -1,4 +1,5 @@
 import 'package:eventyog_mobile/pages/auth/profile.dart';
+import 'package:eventyog_mobile/pages/cart/MyCart.dart';
 import 'package:eventyog_mobile/pages/events/event_list_page.dart';
 import 'package:eventyog_mobile/pages/forum/forum.dart';
 import 'package:eventyog_mobile/pages/friends/friend_list.dart';
@@ -35,7 +36,8 @@ class AnimatedBottomNavigationBar extends StatelessWidget {
       const EventListPage(),
       const ForumPage(),
       const FriendListPage(),
-      ProfilePage(),
+      MyCartPage()
+      // ProfilePage(),
     ];
 
     return BottomNavigationBar(
