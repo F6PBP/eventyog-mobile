@@ -25,6 +25,7 @@ class EventCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15.0),
         ),
+        clipBehavior: Clip.hardEdge,
         elevation: 6,
         margin: const EdgeInsets.all(12),
         child: Column(
@@ -39,27 +40,34 @@ class EventCard extends StatelessWidget {
                     topLeft: Radius.circular(15.0),
                     topRight: Radius.circular(15.0),
                   ),
-                  child: Image.network(
-                    event.fields.imageUrls?.isNotEmpty == true
-                        ? event.fields.imageUrls!
-                        : "https://via.placeholder.com/400x200.png?text=No+Image",
-                    width: double.infinity,
-                    height: 200,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(child: CircularProgressIndicator());
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Center(
-                        child: Text(
-                          'Image failed to load',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      );
-                    },
+                  child: Container(
+                    constraints: const BoxConstraints(
+                      maxHeight: 200,
+                      maxWidth: double.infinity,
+                    ),
+                    child: Image.network(
+                      event.fields.imageUrls?.isNotEmpty == true
+                          ? event.fields.imageUrls!
+                          : "https://media-cldnry.s-nbcnews.com/image/upload/t_fit-760w,f_auto,q_auto:best/rockcms/2024-06/240602-concert-fans-stock-vl-1023a-9b4766.jpg",
+                      width: double.infinity,
+                      height: 200,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(child: CircularProgressIndicator());
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Text(
+                            'Image failed to load',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
+
                 // Gradient Overlay with Title
                 Container(
                   width: double.infinity,
@@ -79,39 +87,32 @@ class EventCard extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 // Title Positioned at Bottom of the Image
                 Positioned(
-                  bottom: 10,
+                  bottom: 20,
                   left: 10,
                   right: 10,
-                  child: Text(
-                    event.fields.title,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    maxLines: 2,
-                  ),
-                ),
-                // Favorite Button
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.favorite_border,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      // TODO: Implement favorite functionality
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SizedBox(
+                        width: constraints.maxWidth,
+                        child: Text(
+                          event.fields.title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
                     },
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
           ],
         ),
       ),

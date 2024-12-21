@@ -1,8 +1,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/models/EventModel.dart';
+import 'package:eventyog_mobile/pages/events/event_list_page.dart';
 import 'package:eventyog_mobile/pages/home/widgets/event_card.dart';
-import 'package:eventyog_mobile/pages/home/widgets/upcoming_card.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -86,7 +86,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      bottomNavigationBar: AnimatedBottomNavigationBar(currentIndex: 0),
+      bottomNavigationBar: const AnimatedBottomNavigationBar(currentIndex: 0),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: SingleChildScrollView(
@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 10),
               CarouselSlider(
                 options: CarouselOptions(
-                  height: 220.0,
+                  height: 224.0,
                   autoPlay: true,
                   enlargeCenterPage: true,
                   viewportFraction: 0.85,
@@ -156,10 +156,10 @@ class _HomePageState extends State<HomePage> {
               SectionHeader(
                 title: 'Upcoming Events',
                 onTap: () {
-                  // TODO: Navigate to upcoming events page
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => EventListPage()));
                 },
               ),
-              const SizedBox(height: 10),
               isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : upcomingEvents.isEmpty
@@ -178,8 +178,8 @@ class _HomePageState extends State<HomePage> {
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            crossAxisSpacing: 15.0,
-                            mainAxisSpacing: 15.0,
+                            crossAxisSpacing: 5.0,
+                            mainAxisSpacing: 5.0,
                             childAspectRatio: 0.8,
                           ),
                           itemCount: upcomingEvents.length,
@@ -187,33 +187,16 @@ class _HomePageState extends State<HomePage> {
                             return EventCard(event: upcomingEvents[index]);
                           },
                         ),
-              const SizedBox(height: 20),
-
-              // Registered Events Section
-              SectionHeader(
-                title: 'Registered Events',
-                onTap: () {
-                  // TODO: Navigate to registered events page
-                },
-              ),
-              const SizedBox(height: 10),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: registeredEvents.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final event = registeredEvents[index];
-                  return UpcomingCard(
-                    title: event['title']!,
-                    description: event['description']!,
-                    date: event['date']!,
-                    time: event['time']!,
-                  );
-                },
-              ),
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => EventListPage()));
+        },
+        child: const Icon(Icons.shopping_cart),
       ),
     );
   }
