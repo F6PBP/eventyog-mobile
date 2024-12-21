@@ -13,6 +13,7 @@ class MerchandiseCard extends StatefulWidget {
 
   final Function increaseBoughtQuantity;
   final Function decreaseBoughtQuantity;
+  final int itemAmount; // Add this parameter
 
   MerchandiseCard({
     required this.imageUrl,
@@ -26,6 +27,7 @@ class MerchandiseCard extends StatefulWidget {
     this.onTap,
     required this.increaseBoughtQuantity,
     required this.decreaseBoughtQuantity,
+    required this.itemAmount, // Add this parameter
   });
 
   @override
@@ -33,9 +35,17 @@ class MerchandiseCard extends StatefulWidget {
 }
 
 class _MerchandiseCardState extends State<MerchandiseCard> {
-  int boughtQuantity = 0;
+  int boughtQuantity = 0; // Initialize with a default value
+
+
+  @override
+  void initState() {
+    super.initState();
+    boughtQuantity = widget.itemAmount; // Initialize with the passed item amount
+  }
 
   void _increaseBoughtQuantity() {
+    boughtQuantity = widget.itemAmount;
     setState(() {
       if (boughtQuantity < widget.quantity) {
         boughtQuantity++;
@@ -53,6 +63,8 @@ class _MerchandiseCardState extends State<MerchandiseCard> {
   }
 
   void _decreaseBoughtQuantity() {
+    boughtQuantity = widget.itemAmount;
+
     setState(() {
       if (boughtQuantity > 0) {
         boughtQuantity--;
@@ -141,8 +153,7 @@ class _MerchandiseCardState extends State<MerchandiseCard> {
                                         ? loadingProgress
                                                 .cumulativeBytesLoaded /
                                             (loadingProgress
-                                                    .expectedTotalBytes ??
-                                                1)
+                                                    .expectedTotalBytes ?? 1)
                                         : null,
                                   ),
                                 );
@@ -194,7 +205,7 @@ class _MerchandiseCardState extends State<MerchandiseCard> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8),
                       child: Text(
-                        '$boughtQuantity',
+                        '${widget.itemAmount}', // Display the item amount
                         style: TextStyle(fontSize: 16, color: Colors.black),
                       ),
                     ),
