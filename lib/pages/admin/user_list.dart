@@ -40,10 +40,10 @@ class _AdminUserListPageState extends State<AdminUserListPage> {
               status: true, 
               message: response['message'] ?? '',
               data: Data(
-                username: userJson['name'] ?? '', // Using name as username since API doesn't seem to have a username
+                username: userJson['username'] ?? '', // Using name as username since API doesn't seem to have a username
                 name: userJson['name'] ?? '',
                 email: userJson['email'] ?? '',
-                dateJoined: DateTime.now(), // Default to current time since date_joined is not in API response
+                dateJoined: DateTime.parse(userJson['date_joined'] ?? DateTime.now().toString()), // Default to current time since date_joined is not in API response
                 bio: userJson['bio'] ?? '', // Empty bio since it's not in API response
                 imageUrl: '',//userJson['profile_picture'] ?? '', // Empty image URL since it's not in API response
                 categories: userJson['role'] // Using role as categories

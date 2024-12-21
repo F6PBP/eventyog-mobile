@@ -102,14 +102,14 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Text(
                           "Hello, ${request.jsonData['username']}",
-                          style: theme.textTheme.headline6?.copyWith(
+                          style: theme.textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 5),
                         Text(
                           "Let's explore events around you.",
-                          style: theme.textTheme.subtitle1?.copyWith(
+                          style: theme.textTheme.titleLarge?.copyWith(
                             color: Colors.grey,
                           ),
                         ),
@@ -234,7 +234,7 @@ class SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: theme.textTheme.headline6?.copyWith(
+          style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),

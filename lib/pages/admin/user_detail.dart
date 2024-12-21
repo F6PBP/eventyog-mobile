@@ -7,8 +7,7 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
 class UserDetailPage extends StatefulWidget {
-  final String username; // Or userId, depending on what you use to identify users
-  
+  final String username; // Or userId, depending on what you use to identify user
   const UserDetailPage({
     Key? key,
     required this.username,
@@ -20,45 +19,42 @@ class UserDetailPage extends StatefulWidget {
 
 class _UserDetailPageState extends State<UserDetailPage> {
   Future<ProfileModel> fetchUserProfile(CookieRequest request) async {
-  try {
-    final encodedUsername = Uri.encodeComponent(widget.username);
+    //final String username;
+    try {
+      final encodedUsername = Uri.encodeComponent(widget.username);
+      print('Attempting to fetch user with username: ${widget.username}');
+      final url = "http://127.0.0.1:8000/api/admin/see_user/$encodedUsername";
+      print('Request URL: $url');
+      
+      final response = await request.get(url);
+      print('Response: $response');
 
-    print('Attempting to fetch user with username: ${widget.username}'); // Debug print
-    print('Encoded username: $encodedUsername'); // Debug print
-    final url = "http://127.0.0.1:8000/api/admin/see_user/$encodedUsername";
-    print('Request URL: $url'); // Debug print
-    
-    final response = await request.get(
-      "http://127.0.0.1:8000/api/admin/see_user/$encodedUsername"
-    );
-    print('Response: $response'); // Debugging
+      final userJson = response['data']?[0];
 
-    if (response != null && response['status'] == true) {
-      final userJson = response['data'];
-      return ProfileModel(
-        status: true,
-        message: response['message'] ?? '',
-        data: Data(
-          username: userJson['username'] ?? '',
-          name: userJson['name'] ?? '',
-          email: userJson['email'] ?? '',
-          dateJoined: DateTime.parse(userJson['date_joined'] ?? DateTime.now().toIso8601String()),
-          bio: userJson['bio'] ?? '',
-          imageUrl: '', // userJson['image_url'] ?? '',
-          categories: userJson['categories'] ?? ''
-        )
-      );
-    } else {
-      print('Unexpected response format');
-      print('Response type: ${response.runtimeType}');
-      throw Exception('Failed to load user profile');
+      // Check if the response structure is correct
+      if (response['status'] == true && response['data'] != null) {
+        //print('success' + userJson['username']);
+        return ProfileModel(
+          status: userJson['status'] ?? false,
+          message: userJson['message'] ?? '',
+          data: Data(
+            username: userJson['username'] ?? '', // Using name as username since API doesn't seem to have a username
+            name: userJson['name'] ?? '',
+            email: userJson['email'] ?? '',
+            dateJoined: DateTime.parse(userJson['date_joined'] ?? DateTime.now().toString()), // Default to current time since date_joined is not in API response
+            bio: userJson['bio'] ?? '', // Empty bio since it's not in API response
+            imageUrl: '',//userJson['profile_picture'] ?? '', // Empty image URL since it's not in API response
+            categories: userJson['categories'] // Using role as categories
+          ),
+        );
+      } else {
+        throw Exception('Invalid or missing data in response');
+      }
+    } catch (e) {
+      print('Error fetching user profile: $e');
+      rethrow; // Pass the error to be handled by FutureBuilder
     }
-  } catch (e) {
-    print('Error fetching user profile: $e');
-    print('Detailed error: ${e.toString()}');
-    throw Exception('Failed to load user profile');
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -149,24 +145,46 @@ class _UserDetailPageState extends State<UserDetailPage> {
                     ),
                     const SizedBox(height: 30),
                     Align(
-                      alignment: Alignment.centerLeft,
-                      child: Wrap(
-                        spacing: 8.0,
-                        runSpacing: 4.0,
-                        children: profile.data.categories != null
-                            ? profile.data.categories!
-                                .split(',')
-                                .map<Widget>((category) {
-                                // Safely cast to String if possible and wrap it in a Chip widget
-                                final categoryName = category.toString();
+                      alignment: Alignment.center,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start, // Align content to the left
+                        children: [
+                          // Check if categories are available and conditionally display
+                          if (profile.data.categories != null &&
+                              profile.data.categories!.isNotEmpty) ...[
+                            const Text(
+                              "Categories:",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 8.0), // Add spacing below "Categories:"
+                            Wrap(
+                              spacing: 8.0,
+                              runSpacing: 4.0,
+                              children: profile.data.categories!
+                                  .split(',')
+                                  .map<Widget>((category) {
+                                final categoryName = category.trim(); // Trim spaces
                                 return Chip(
                                   label: Text(categoryName),
                                   backgroundColor: Colors.blue.shade100,
-                                  labelStyle:
-                                      const TextStyle(color: Colors.blue),
+                                  labelStyle: const TextStyle(color: Colors.blue),
                                 );
-                              }).toList()
-                            : [const Text("No categories available")],
+                              }).toList(),
+                            ),
+                          ] else ...[
+                            const Text(
+                              "This user hasn't chosen any category",
+                              style: TextStyle(
+                                fontStyle: FontStyle.italic,
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                     const SizedBox(height: 30),
@@ -193,33 +211,10 @@ class _UserDetailPageState extends State<UserDetailPage> {
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
                       onPressed: () async {
-                        // Perform logout operation here
-                        final response = await request
-                            .logout("http://10.0.2.2:8000/api/auth/logout/");
-                        String message = response["message"];
-                        if (context.mounted) {
-                          if (response['status']) {
-                            String uname = response["username"];
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("$message Goodbye, $uname."),
-                            ));
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginPage(),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(message),
-                              ),
-                            );
-                          }
-                        }
+                        
                       },
-                      icon: const Icon(Icons.logout),
-                      label: const Text('Logout'),
+                      icon: const Icon(Icons.delete),
+                      label: const Text('Delete Account'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 15),
