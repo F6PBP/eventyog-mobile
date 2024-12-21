@@ -1,7 +1,9 @@
 import 'package:eventyog_mobile/pages/auth/profile.dart';
+import 'package:eventyog_mobile/pages/cart/MyCart.dart';
+import 'package:eventyog_mobile/pages/events/event_list_page.dart';
+import 'package:eventyog_mobile/pages/forum/forum.dart';
 import 'package:eventyog_mobile/pages/friends/friend_list.dart';
 import 'package:eventyog_mobile/pages/home/index.dart';
-import 'package:eventyog_mobile/pages/events/event_list_page.dart';
 import 'package:flutter/material.dart';
 
 class AnimatedBottomNavigationBar extends StatelessWidget {
@@ -31,10 +33,10 @@ class AnimatedBottomNavigationBar extends StatelessWidget {
 
     final List<Widget> pages = [
       const HomePage(),
-      EventListPage(),
-      const HomePage(),
+      const EventListPage(),
+      const ForumPage(),
       const FriendListPage(),
-      ProfilePage(),
+      MyCartPage(),
     ];
 
     return BottomNavigationBar(
@@ -48,28 +50,35 @@ class AnimatedBottomNavigationBar extends StatelessWidget {
             duration: const Duration(milliseconds: 300),
             padding: isSelected
                 ? const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0)
-                : const EdgeInsets.all(0),
+                : const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
               color: isSelected
-                  ? Colors.deepPurple.withOpacity(0.1)
+                  ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(16.0),
             ),
             child: Icon(
               icons[index],
-              color: isSelected ? Colors.deepPurple : Colors.grey,
+              color: isSelected
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.grey,
+              size: isSelected ? 24.0 : 20.0,
             ),
           ),
           label: labels[index],
         );
       }),
       currentIndex: currentIndex,
-      selectedItemColor: Colors.deepPurple,
+      selectedItemColor: Theme.of(context).colorScheme.primary,
       unselectedItemColor: Colors.grey,
       onTap: (index) {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => pages[index]),
+          PageRouteBuilder(
+            pageBuilder: (context, animation1, animation2) => pages[index],
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
       },
     );

@@ -1,11 +1,36 @@
-import 'package:eventyog_mobile/pages/events/event_card.dart';
-import 'package:eventyog_mobile/pages/events/event_seatch_bar.dart';
+import 'package:eventyog_mobile/const.dart';
+import 'package:eventyog_mobile/pages/events/components/event_card.dart';
+import 'package:eventyog_mobile/pages/events/components/event_search_bar.dart';
+import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'event.dart';
-import 'event_form_page.dart';
+
+import '../../models/EventModel.dart';
 import 'event_edit_page.dart';
+import 'event_create_page.dart';
+
+void main() {
+  runApp(const EventApp());
+}
+
+class EventApp extends StatelessWidget {
+  const EventApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Event List',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.deepPurple,
+        ).copyWith(secondary: Colors.deepPurple[400]),
+      ),
+      home: const EventListPage(),
+    );
+  }
+}
 
 class EventListPage extends StatefulWidget {
   const EventListPage({Key? key}) : super(key: key);
@@ -39,14 +64,13 @@ class _EventListPageState extends State<EventListPage> {
     try {
       final request = context.read<CookieRequest>();
       final response = await request.get(
-        'http://127.0.0.1:8000/api/yogevent/events/',
+        '$fetchUrl/api/yogevent/events/',
       );
 
       List jsonResponse = response;
       setState(() {
         events = jsonResponse.map((event) => Event.fromJson(event)).toList();
-        filteredEvents =
-            events; // Inisialisasi filteredEvents dengan semua events
+        filteredEvents = events;
         isLoading = false;
       });
       filterEvents();
@@ -86,11 +110,10 @@ class _EventListPageState extends State<EventListPage> {
     try {
       final request = context.read<CookieRequest>();
       final response = await request.get(
-        'http://127.0.0.1:8000/api/yogevent/main/',
+        '$fetchUrl/api/yogevent/main/',
       );
 
       setState(() {
-        // Pastikan mengambil status admin yang benar dari response
         isAdmin = response['is_admin'] ?? false;
       });
     } catch (e) {
@@ -105,13 +128,12 @@ class _EventListPageState extends State<EventListPage> {
       final request = context.read<CookieRequest>();
 
       final response = await request.post(
-        'http://127.0.0.1:8000/api/yogevent/delete/$eventId/',
-        {}, // empty body karena kita tidak perlu mengirim data
+        '$fetchUrl/api/yogevent/delete/$eventId/',
+        {},
       );
 
       if (response['status'] == 'success') {
         setState(() {
-          // Update kedua list events dan filteredEvents
           events.removeWhere((event) => event.pk == eventId);
           filteredEvents.removeWhere((event) => event.pk == eventId);
         });
@@ -155,58 +177,56 @@ class _EventListPageState extends State<EventListPage> {
     }
   }
 
-  // Di dalam _EventListPageState class
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Event List'),
-        actions: [
-          if (isAdmin) ...[
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: _navigateToCreateEventPage,
-            ),
-          ]
-        ],
+        title: const Text('Event List', style: TextStyle(color: Colors.white)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
-      body: Column(
-        children: [
-          // Search Bar
-          EventSearchBar(
-            onSearch: (query) {
-              setState(() {
-                searchQuery = query;
-              });
-              filterEvents();
-            },
-            onCategoryChanged: (category) {
-              setState(() {
-                selectedCategory = category;
-              });
-              filterEvents();
-            },
-            searchQuery: searchQuery,
-            selectedCategory: selectedCategory,
-          ),
-
-          // Event Grid
-          Expanded(
-            child: isLoading
-                ? Center(child: CircularProgressIndicator())
-                : filteredEvents.isEmpty
-                    ? const Center(
-                        child: Text(
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToCreateEventPage,
+        tooltip: 'Create Event',
+        child: const Icon(Icons.add),
+      ),
+      bottomNavigationBar: AnimatedBottomNavigationBar(
+        currentIndex: 1,
+      ),
+      body: RefreshIndicator(
+        onRefresh: fetchEvents,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              EventSearchBar(
+                onSearch: (query) {
+                  setState(() {
+                    searchQuery = query;
+                  });
+                  filterEvents();
+                },
+                onCategoryChanged: (category) {
+                  setState(() {
+                    selectedCategory = category;
+                  });
+                  filterEvents();
+                },
+                searchQuery: searchQuery,
+                selectedCategory: selectedCategory,
+              ),
+              const SizedBox(height: 16.0),
+              isLoading
+                  ? const CircularProgressIndicator()
+                  : filteredEvents.isEmpty
+                      ? const Text(
                           'No events found',
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey,
                           ),
-                        ),
-                      )
-                    : Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: GridView.builder(
+                        )
+                      : GridView.builder(
+                          shrinkWrap: true,
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
@@ -217,17 +237,20 @@ class _EventListPageState extends State<EventListPage> {
                           itemCount: filteredEvents.length,
                           itemBuilder: (context, index) {
                             final event = filteredEvents[index];
-                            return EventCard(
-                              event: event,
-                              isAdmin: isAdmin,
-                              onEdit: _navigateToEditEventPage,
-                              onDelete: _showDeleteConfirmation,
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: EventCard(
+                                event: event,
+                                isAdmin: isAdmin,
+                                onEdit: _navigateToEditEventPage,
+                                onDelete: _showDeleteConfirmation,
+                              ),
                             );
                           },
                         ),
-                      ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

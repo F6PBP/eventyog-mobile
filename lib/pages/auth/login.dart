@@ -1,3 +1,4 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/pages/auth/register.dart';
 import 'package:eventyog_mobile/pages/home/index.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,11 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Image.asset(
+                'assets/icon/icon.png',
+                height: 100.0,
+              ),
+              const SizedBox(height: 24.0),
               const Text(
                 'Welcome Back',
                 style: TextStyle(
@@ -98,8 +104,8 @@ class _LoginPageState extends State<LoginPage> {
                   String username = _usernameController.text;
                   String password = _passwordController.text;
 
-                  final response = await request
-                      .login("http://127.0.0.1:8000/api/auth/login/", {
+                  final response =
+                      await request.login("$fetchUrl/api/auth/login/", {
                     'username': username,
                     'password': password,
                   });

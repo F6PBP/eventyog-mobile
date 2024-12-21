@@ -1,8 +1,8 @@
+import 'package:eventyog_mobile/const.dart';
 import 'package:eventyog_mobile/models/FriendListModel.dart';
 import 'package:eventyog_mobile/pages/friends/friend_detail.dart';
 import 'package:eventyog_mobile/widgets/BottomNavbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -19,14 +19,15 @@ class _FriendListPageState extends State<FriendListPage> {
     final request = context.watch<CookieRequest>();
 
     Future<FriendListModel> fetchFriendList(CookieRequest request) async {
-      final response =
-          await request.get("http://127.0.0.1:8000/api/friend/list/");
+      final response = await request.get("$fetchUrl/api/friend/list/");
       return FriendListModel.fromJson(response);
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Friends List and Recommendations'),
+        title:
+            const Text('Friends List', style: TextStyle(color: Colors.white)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       bottomNavigationBar: const AnimatedBottomNavigationBar(
         currentIndex: 3,
