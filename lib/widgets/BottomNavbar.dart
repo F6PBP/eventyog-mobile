@@ -36,7 +36,7 @@ class AnimatedBottomNavigationBar extends StatelessWidget {
       const EventListPage(),
       const ForumPage(),
       const FriendListPage(),
-      const ProfilePage(),
+      MyCartPage(),
     ];
 
     return BottomNavigationBar(
